@@ -1,0 +1,7 @@
+{
+  "name": "donasi-kita",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
