@@ -5,7 +5,7 @@ import { createPinia } from "pinia";
 
 const pinia = createPinia()
 
-import { IonicVue, IonPage, IonTitle, IonCardTitle, IonCardSubtitle, IonContent, IonGrid, IonRow, IonCol, IonIcon, IonButton, IonCard, IonCardContent, IonCardHeader, IonModal, IonInput, IonList, IonItem, IonToolbar  } from '@ionic/vue';
+import { IonicVue, IonPage, IonTitle, IonCardTitle, IonCardSubtitle, IonContent, IonGrid, IonRow, IonCol, IonIcon, IonButton, IonCard, IonCardContent, IonCardHeader, IonModal, IonInput, IonList, IonItem, IonToolbar, IonText  } from '@ionic/vue';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -49,6 +49,7 @@ app.component('ion-input', IonInput)
 app.component('ion-list', IonList)
 app.component('ion-item', IonItem)
 app.component('ion-toolbar', IonToolbar)
+app.component('ion-text', IonText)
   
 router.isReady().then(() => {
   app.mount('#app');

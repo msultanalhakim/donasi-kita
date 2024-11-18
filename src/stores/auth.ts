@@ -1,48 +1,50 @@
-import { defineStore} from "pinia";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-
+import { defineStore } from "pinia";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
-
-import { dataBase, auth } from '@/firebase';
+import { dataBase, auth } from "@/firebase";
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         isLoggedIn: false,
     }),
     actions: {
-        register(user: any) {
-            console.log('Something!')
-            createUserWithEmailAndPassword(auth, user.email, user.password)
-                .then(async (userCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    this.isLoggedIn = true
+        async register(user: any) {
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
+                const registeredUser = userCredential.user;
+                this.isLoggedIn = true;
 
-                    // Add a new document in collection "cities"
-                    await setDoc(doc(dataBase, "users", userCredential.user.uid), {
-                        records: []
-                    });
-                    // ...
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    // ..
+                // Simpan data pengguna di Firestore
+                await setDoc(doc(dataBase, "users", registeredUser.uid), {
+                    records: [],
                 });
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new Error(error.message || "Pendaftaran gagal.");
+                }
+                throw new Error("Pendaftaran gagal dengan alasan yang tidak diketahui.");
+            }
         },
 
-        login(user: any) {
-            signInWithEmailAndPassword(auth, user.email, user.password)
-                .then(async (userCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    this.isLoggedIn = true
-
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                });
+        async login(user: any) {
+            if (!user.email || !user.password) {
+                throw new Error("Email dan password harus diisi.");
+            }
+        
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, user.email, user.password);
+                const loggedInUser = userCredential.user;
+                if (!loggedInUser) {
+                    throw new Error("Login gagal. Tidak dapat menemukan data pengguna.");
+                }
+        
+                this.isLoggedIn = true;
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new Error(error.message || "Login gagal.");
+                }
+                throw new Error("Login gagal dengan alasan yang tidak diketahui.");
+            }
         }
-    }
-})
+    }        
+});
