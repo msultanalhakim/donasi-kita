@@ -8,18 +8,14 @@ import { onAuthStateChanged } from 'firebase/auth'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/home'
+    name: 'Auth',
+    component: AuthPage
   },
   {
     path: '/home',
     name: 'Home',
     component: HomePage
   },
-  {
-    path: '/auth',
-    name: 'Auth',
-    component: AuthPage
-  }
 ]
 
 const router = createRouter({
