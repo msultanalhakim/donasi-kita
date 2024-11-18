@@ -5,7 +5,7 @@
     <ion-router-outlet></ion-router-outlet>
 
     <ion-tab-bar slot="bottom">
-      <ion-tab-button tab="Home" href="/home">
+      <ion-tab-button tab="Beranda" href="/beranda">
         <ion-icon :icon="home"></ion-icon>
         <ion-label>Beranda</ion-label>
       </ion-tab-button>
