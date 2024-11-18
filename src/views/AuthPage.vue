@@ -80,7 +80,7 @@ const toggleAuthMode = () => {
 };
 
 // Validate Inputs
-const validateInputs = (): boolean => {
+const validateInputs = () => {
   const { email, password, confirmPassword } = userCredentials.value;
 
   if (!email || !email.includes("@")) {
@@ -101,6 +101,7 @@ const validateInputs = (): boolean => {
   return true;
 };
 
+
 // Authenticate User
 const authenticate = async () => {
   if (!validateInputs()) return;
@@ -113,7 +114,7 @@ const authenticate = async () => {
     }
 
     // Tunggu hingga navigasi selesai
-    await router.push({ path: "/adm/home" });
+    await router.push({ path: "/beranda" });
   } catch (error) {
     errorMessage.value =
       error instanceof Error ? error.message : "An unexpected error occurred.";

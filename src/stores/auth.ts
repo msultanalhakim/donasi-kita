@@ -12,7 +12,6 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
                 const registeredUser = userCredential.user;
-                this.isLoggedIn = true;
 
                 // Simpan data pengguna di Firestore
                 await setDoc(doc(dataBase, "users", registeredUser.uid), {
