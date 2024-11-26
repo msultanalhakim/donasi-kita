@@ -71,8 +71,6 @@
           </ion-row>
         </ion-grid>
       </ion-card>
-
-      <Bottombar />
     </ion-content>
   </ion-page>
 </template>
@@ -122,5 +120,4 @@ import Yayasan from "@/components/icons/Yayasan.vue";
 import Bantuan from "@/components/icons/Bantuan.vue";
 import Aboutus from "@/components/icons/Aboutus.vue";
 import Riwayat from "@/components/icons/Riwayat.vue";
-import Bottombar from "@/components/Bottombar.vue";
 </script>

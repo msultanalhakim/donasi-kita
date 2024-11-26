@@ -4,8 +4,8 @@
   <ion-tabs>
     <ion-router-outlet></ion-router-outlet>
 
-    <ion-tab-bar slot="bottom">
-      <ion-tab-button tab="Beranda" href="/beranda">
+    <ion-tab-bar slot="bottom" class="custom-tab-bar">
+      <ion-tab-button tab="Home" href="/beranda">
         <ion-icon :icon="home"></ion-icon>
         <ion-label>Beranda</ion-label>
       </ion-tab-button>
@@ -39,13 +39,20 @@ import { home, newspaperOutline, settings } from "ionicons/icons";
 </script>
 
 <style scoped>
+ion-tabs {
+  padding: 10px 10px;
+  background-color: white;
+}
 ion-tab-bar {
-  bottom: 0;
-  left: 0;
+  margin-block: 10px;
+  border-radius: 500px;
   width: 100%;
   height: 60px; /* Tinggi Bottombar */
-  background-color: white; /* Warna latar tab */
-  border-top: 1px solid #ccc; /* Opsional: garis atas */
-  z-index: 10;
+  --background: #295c9e;
+}
+
+ion-tab-button {
+  --color-selected: rgb(255, 255, 255);
+  --color: rgb(0, 0, 0);
 }
 </style>

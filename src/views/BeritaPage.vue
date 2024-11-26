@@ -54,13 +54,10 @@
         </ion-card-content>
       </ion-card>
     </ion-content>
-
-    <Bottombar />
   </ion-page>
 </template>
 
 <script setup>
-import Bottombar from "@/components/Bottombar.vue";
 import { IonPage } from "@ionic/vue";
 </script>
 

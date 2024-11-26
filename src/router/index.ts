@@ -26,7 +26,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: "/adm/home",
-    name: "Home",
+    name: "HomeAdmin",
     component: Home,
   },
   {
