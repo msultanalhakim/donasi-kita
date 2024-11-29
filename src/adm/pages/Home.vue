@@ -26,24 +26,7 @@
   import { useUserStore } from '@/adm/stores/usersStore'; // Import store user
   import { onMounted } from 'vue';
   
-  export default {
-    name: 'HomePage',
-    setup() {
-      const userStore = useUserStore(); // Inisialisasi store
-      const { users, loading, loadUsers } = userStore; // Mendapatkan state dan actions
-  
-      // Memuat data pengguna ketika halaman pertama kali dimuat
-      onMounted(() => {
-        loadUsers();
-      });
-  
-      return {
-        users,
-        loading,
-        loadUsers
-      };
-    }
-  };
+ 
   </script>
   
   <style scoped>

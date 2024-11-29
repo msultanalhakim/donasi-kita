@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
-import HomePage from "../views/HomePage.vue";
-import AuthPage from "../views/AuthPage.vue";
-import Home from "../adm/pages/Home.vue";
 import BerandaPage from "@/views/BerandaPage.vue";
 import BeritaPage from "@/views/BeritaPage.vue";
 import PengaturanPage from "@/views/PengaturanPage.vue";
+import LoginPage from "@/views/LoginPage.vue";
+import HomePage from "@/views/HomePage.vue";
+import RegisterPage from "@/views/RegisterPage.vue";
 
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -15,19 +15,19 @@ const routes: Array<RouteRecordRaw> = [
     redirect: "/auth",
   },
   {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: RegisterPage,
+  },
+  {
     path: "/home",
     name: "Home",
     component: HomePage,
-  },
-  {
-    path: "/auth",
-    name: "Auth",
-    component: AuthPage,
-  },
-  {
-    path: "/adm/home",
-    name: "Home",
-    component: Home,
   },
   {
     path: "/beranda",
