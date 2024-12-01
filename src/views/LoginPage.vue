@@ -174,6 +174,8 @@ const authenticate = async () => {
 .google-button {
   --border-radius: 26px;
   --background: #ffffff;
+  --background-hover: #5A6C57;
+  --background-activated: #5A6C57;
   --border-color: #85A98F; /* Google Red */
   --color: #85A98F;
 }

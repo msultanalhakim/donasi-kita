@@ -40,8 +40,6 @@
           <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
         </ion-item>
       </ion-list>
-
-      <Bottombar />
     </ion-content>
   </ion-page>
 </template>
@@ -49,7 +47,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import Bottombar from "@/components/Bottombar.vue";
+
 import { IonPage } from "@ionic/vue";
 
 const isDarkMode = ref(false); // Mode Gelap

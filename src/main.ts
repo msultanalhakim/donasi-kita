@@ -30,6 +30,14 @@ import {
   IonTabButton,
   IonTabBar,
   IonHeader,
+  IonButtons,
+  IonBackButton,
+  IonSelect,
+  IonSelectOption,
+  IonSpinner,
+  IonMenu,
+  IonMenuButton,
+  IonSearchbar
 } from '@ionic/vue';
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -98,6 +106,14 @@ app.component('ion-tab-bar', IonTabBar);
 app.component('ion-tab-button', IonTabButton);
 app.component('ion-header', IonHeader);
 app.component('ion-footer', IonFooter);
+app.component('ion-buttons', IonButtons);
+app.component('ion-select', IonSelect);
+app.component('ion-select-option', IonSelectOption);
+app.component('ion-spinner', IonSpinner);
+app.component('ion-back-button', IonBackButton);
+app.component('ion-menu', IonMenu);
+app.component('ion-menu-button', IonMenuButton);
+app.component('ion-searchbar', IonSearchbar);
 app.component('swiper', Swiper);
 app.component('swiper-slide', SwiperSlide);
 

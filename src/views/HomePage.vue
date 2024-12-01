@@ -100,15 +100,15 @@
           <h2>How It Works</h2>
           <div class="steps-container">
             <div class="step">
-              <ion-icon :icon="notificationsOutline" class="step-icon"></ion-icon>
+              <ion-icon :icon="notifications" class="step-icon"></ion-icon>
               <p>Select the item you wish to donate from your collection.</p>
             </div>
             <div class="step">
-              <ion-icon :icon="locationOutline" class="step-icon"></ion-icon>
+              <ion-icon :icon="location" class="step-icon"></ion-icon>
               <p>Choose a time for the pickup or drop-off at a nearby location.</p>
             </div>
             <div class="step">
-              <ion-icon :icon="cubeOutline" class="step-icon"></ion-icon>
+              <ion-icon :icon="cube" class="step-icon"></ion-icon>
               <p>Your items are delivered to those in need, creating a real impact!</p>
             </div>
           </div>
@@ -128,6 +128,9 @@ import {
   searchOutline,
   notificationsOutline,
   locationOutline,
+  location,
+  notifications,
+  cube,
   settings,
   bicycle,
   book,
@@ -140,7 +143,6 @@ import {
   logoTwitter,
   cubeOutline
 } from "ionicons/icons";
-import TabsLayout from '@/components/TabsLayout.vue';
 
 // Mock data for offers
 const offers = [
@@ -330,7 +332,7 @@ ion-content {
 
 /* Swiper Section */
 .special-swiper {
-  margin-top: -24px
+  margin-top: -10px
 }
 
 .offer-slide {
@@ -407,6 +409,7 @@ ion-card-content {
 .category-grid {
   padding: 4px 0;
   display: flex;
+  width: 100%;
   gap: 20px;
   overflow-x: auto;
   padding-bottom: 10px; /* Prevent content from hiding */
@@ -415,6 +418,7 @@ ion-card-content {
 
 .category-card {
   display: flex;
+  width: 25%;
   flex-direction: column;
   align-items: center;
   transition: transform 0.3s ease;
@@ -449,47 +453,33 @@ ion-card-content {
   margin-top: 8px;
 }
 
-
 /* How It Works Section */
 .how-it-works {
-  margin: 2px 15px 0;
+  margin: 20px 24px;
   padding: 14px 20px;
-  background-color: #fff;
-  margin-bottom: 30px;
-  border-radius: 16px;
-}
-
-.how-it-works h2 {
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .steps-container {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
   gap: 20px;
 }
 
 .step {
-  text-align: center;
-  width: 30%;
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
 .step-icon {
-  font-size: 40px;
-  color: #85a98f;
-}
-
-.step h3 {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
+  font-size: 45px;
+  color: #85A98F;
 }
 
 .step p {
-  font-size: 14px;
-  color: #555;
+  font-size: 16px;
+  color: #333;
 }
 </style>
