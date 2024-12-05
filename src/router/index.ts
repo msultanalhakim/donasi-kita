@@ -17,9 +17,15 @@ import DashboardPage from "@/views/admin/DashboardPage.vue";
 import ManageUserPage from "@/views/admin/manage/users/ManageUserPage.vue";
 import ManageUserAddPage from "@/views/admin/manage/users/ManageUserAddPage.vue";
 import ManageUserEditPage from "@/views/admin/manage/users/ManageUserEditPage.vue";
+
+import ManageTargetPage from "@/views/admin/manage/donations-target/ManageTargetPage.vue";
+import ManageTargetAddPage from "@/views/admin/manage/donations-target/ManageTargetAddPage.vue";
+import ManageTargetEditPage from "@/views/admin/manage/donations-target/ManageTargetEditPage.vue";
+
 import ManageCategoryPage from "@/views/admin/manage/categories/ManageCategoryPage.vue";
 import ManageCategoryAddPage from "@/views/admin/manage/categories/ManageCategoryAddPage.vue";
 import ManageCategoryEditPage from "@/views/admin/manage/categories/ManageCategoryEditPage.vue";
+
 import ManageCampaignPage from "@/views/admin/manage/campaign/ManageCampaignPage.vue";
 import ManageArticlePage from "@/views/admin/manage/article/ManageArticlePage.vue";
 
@@ -76,6 +82,21 @@ const routes: Array<RouteRecordRaw> = [
     path: "/manage-user/edit/:userId",
     name: "ManageUserEdit",
     component: ManageUserEditPage,
+  },
+  {
+    path: "/manage-target",
+    name: "ManageTarget",
+    component: ManageTargetPage,
+  },
+  {
+    path: "/manage-target/add",
+    name: "ManageTargetAdd",
+    component: ManageTargetAddPage,
+  },
+  {
+    path: "/manage-target/edit:targetId",
+    name: "ManageTargetEdit",
+    component: ManageTargetEditPage,
   },
   {
     path: "/manage-category",

@@ -42,6 +42,10 @@
             <ion-icon :icon="cashOutline" slot="start"></ion-icon>
             <ion-label>Manage Donations</ion-label>
           </ion-item>
+          <ion-item button @click="() => router.push('/manage-target')">
+            <ion-icon :icon="storefront" slot="start"></ion-icon>
+            <ion-label>Manage Donation Targets</ion-label>
+          </ion-item>
           <ion-item button @click="() => router.push('/manage-article')">
             <ion-icon :icon="newspaperOutline" slot="start"></ion-icon>
             <ion-label>Manage Articles</ion-label>
@@ -71,7 +75,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { IonList, IonItem, IonIcon, IonLabel } from "@ionic/vue";
-import { cashOutline, giftOutline, logOutOutline, newspaperOutline, peopleOutline, pricetagsOutline, settingsOutline } from "ionicons/icons";
+import { cashOutline, giftOutline, logOutOutline, newspaperOutline, peopleOutline, pricetagsOutline, settingsOutline, storefront } from "ionicons/icons";
 
 const router = useRouter();
 
