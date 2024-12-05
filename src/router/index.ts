@@ -51,7 +51,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: "/login", name: "Login", component: LoginPage },
   { path: "/register", name: "Register", component: RegisterPage },
   { path: "/home", name: "Home", component: HomePage },
-  { path: "/profile", name: "Profile", component: ProfilePage},
+  { path: "/profile", name: "Profile", component: ProfilePage },
   { path: "/beranda", name: "Beranda", component: BerandaPage },
   { path: "/berita", name: "Berita", component: BeritaPage },
   { path: "/pengaturan", name: "Pengaturan", component: PengaturanPage },
@@ -88,7 +88,7 @@ const routes: Array<RouteRecordRaw> = [
     component: ManageCategoryAddPage,
   },
   {
-    path: "/manage-category/edit",
+    path: "/manage-category/edit/:id",
     name: "ManageCategoryEdit",
     component: ManageCategoryEditPage,
   },
