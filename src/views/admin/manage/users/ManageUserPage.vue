@@ -1,10 +1,16 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar>
-        <ion-title>Manage Users</ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button @click="() => router.push('/dashboard')">
+        <ion-icon slot="icon-only" :icon="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Manage Users</ion-title>
+  </ion-toolbar>
+</ion-header>
+
 
     <ion-content fullscreen>
       <div class="crud-container">
@@ -87,6 +93,8 @@ import { ref, computed, onMounted } from 'vue';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
 import { trash, create, filter, add } from 'ionicons/icons';
+import { home } from 'ionicons/icons';
+
 
 // Router
 const router = useRouter();

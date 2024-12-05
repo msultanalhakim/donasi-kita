@@ -20,8 +20,8 @@ import ManageUserEditPage from "@/views/admin/manage/users/ManageUserEditPage.vu
 import ManageCategoryPage from "@/views/admin/manage/categories/ManageCategoryPage.vue";
 import ManageCategoryAddPage from "@/views/admin/manage/categories/ManageCategoryAddPage.vue";
 import ManageCategoryEditPage from "@/views/admin/manage/categories/ManageCategoryEditPage.vue";
-import ManageCampaignPage from "@/views/admin/manage/ManageCampaignPage.vue";
-import ManageArticlePage from "@/views/admin/manage/ManageArticlePage.vue";
+import ManageCampaignPage from "@/views/admin/manage/campaign/ManageCampaignPage.vue";
+import ManageArticlePage from "@/views/admin/manage/article/ManageArticlePage.vue";
 
 // // Middleware
 // const authGuard = (to, from, next) => {
