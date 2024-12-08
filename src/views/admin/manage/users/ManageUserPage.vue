@@ -1,49 +1,34 @@
 <template>
   <ion-page>
     <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="end">
-      <ion-button @click="() => router.push('/dashboard')">
-        <ion-icon slot="icon-only" :icon="home"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>Manage Users</ion-title>
-  </ion-toolbar>
-</ion-header>
-
+      <ion-toolbar color="primary">
+        <ion-buttons slot="end">
+          <ion-button @click="() => router.push('/dashboard')" color="light">
+            <ion-icon slot="icon-only" :icon="home"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Manage Users</ion-title>
+      </ion-toolbar>
+    </ion-header>
 
     <ion-content fullscreen>
       <div class="crud-container">
         <!-- Add User Button -->
-        <div class="header-actions">
-          <ion-button expand="block" @click="() => router.push('/manage-user/add')">
+        <!-- <div class="header-actions">
+          <ion-button expand="block" @click="() => router.push('/manage-user/add')" color="success">
             <ion-icon slot="start" :icon="add"></ion-icon>
             Add New User
           </ion-button>
-        </div>
+        </div> -->
 
-        <!-- Search and Filter Section (80:20 ratio) -->
+        <!-- Search Section -->
         <div class="search-filter-container">
-          <!-- Search Bar (80%) -->
-          <div class="search-bar">
-            <ion-searchbar v-model="searchQuery" debounce="500" placeholder="Search users..."></ion-searchbar>
-          </div>
-
-          <!-- Filter Icon (20%) -->
-          <div class="filter-icon">
-            <ion-icon :icon="filter" @click="toggleFilterMenu"></ion-icon>
-          </div>
-        </div>
-
-        <!-- Filter and Sort Section (Hidden by Default) -->
-        <div v-if="isFilterMenuVisible" class="filter-sort">
-          <ion-item>
-            <ion-label>Sort By</ion-label>
-            <ion-select v-model="sortOption" @ionChange="sortUsers">
-              <ion-select-option value="name">Name</ion-select-option>
-              <ion-select-option value="email">Email</ion-select-option>
-            </ion-select>
-          </ion-item>
+          <ion-searchbar
+            v-model="searchQuery"
+            debounce="500"
+            placeholder="Search users..."
+            show-clear-button="focus"
+          ></ion-searchbar>
         </div>
 
         <!-- Users Table -->
@@ -51,35 +36,43 @@
           <ion-list>
             <!-- Table Header -->
             <ion-item class="table-header">
-              <ion-label class="table-column">Field</ion-label>
+              <ion-label class="table-column">name</ion-label>
+              <ion-label class="table-column">Email</ion-label>
+              <ion-label class="table-column">Role</ion-label>
               <ion-label class="table-column">Actions</ion-label>
             </ion-item>
-            
+
             <!-- Table Rows -->
-            <ion-item v-for="user in paginatedUsers" :key="user.id">
+            <ion-item v-for="user in paginatedUsers" :key="user.id" lines="inset">
               <ion-label>
                 <h2>{{ user.name }}</h2>
                 <p>{{ user.email }}</p>
-                <span>{{  user.role }}</span>
+                <p>{{ user.role }}</p>
               </ion-label>
-              <ion-button color="primary" fill="outline" @click="editUser(user)">
-                <ion-icon slot="icon-only" :icon="create"></ion-icon>
-              </ion-button>
-              <ion-button color="danger" fill="outline" @click="deleteUser(user.id)">
-                <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-              </ion-button>
+              <ion-buttons slot="end">
+                <!-- <ion-button color="primary" fill="outline" @click="editUser(user)">
+                  <ion-icon slot="icon-only" :icon="create"></ion-icon>
+                </ion-button> -->
+                <!-- <ion-button color="danger" fill="outline" @click="deleteUser(user.id)">
+                  <ion-icon slot="icon-only" :icon="trash"></ion-icon>
+                </ion-button> -->
+              </ion-buttons>
             </ion-item>
           </ion-list>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-          <ion-button :disabled="currentPage === 1" @click="previousPage">
-            Previous
+          <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
           </ion-button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <ion-button :disabled="currentPage === totalPages" @click="nextPage">
-            Next
+          <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
           </ion-button>
         </div>
       </div>
@@ -89,12 +82,10 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
-import { trash, create, filter, add } from 'ionicons/icons';
-import { home } from 'ionicons/icons';
-
+import { trash, create, add, home } from 'ionicons/icons';
 
 // Router
 const router = useRouter();
@@ -107,55 +98,49 @@ type User = {
   role: string;
 };
 
-// Reactive Variables
 const users = ref<User[]>([]);
-const sortOption = ref('name');
-const itemsPerPage = 3;
+const itemsPerPage = 4;
 const currentPage = ref(1);
 const searchQuery = ref('');
-const isFilterMenuVisible = ref(false);
 
-// Fetch Users
 const fetchUsers = async () => {
   const querySnapshot = await getDocs(collection(dataBase, 'users'));
   users.value = querySnapshot.docs.map(doc => {
     const data = doc.data();
     return {
       id: doc.id,
-      name: data.name || 'Unnamed User', // Fallback for missing name
+      name: data.name || 'Unnamed User',
       email: data.email || 'No Email',
       role: data.role || 'No Role',
     } as User;
   });
 };
 
-// Call fetchUsers on component mount
 onMounted(() => {
   fetchUsers();
 });
 
-// Sort Users
-const sortUsers = () => {
-  users.value.sort((a, b) => {
-    if (sortOption.value === 'name') {
-      return (a.name || '').localeCompare(b.name || '');
-    } else if (sortOption.value === 'email') {
-      return (a.email || '').localeCompare(b.email || '');
-    }
-    return 0;
-  });
+const refreshData = () => {
+  fetchUsers();
 };
 
-// Search Users
+onMounted(() => {
+  window.addEventListener('data-updated', refreshData);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('data-updated', refreshData);
+});
+
 const filteredUsers = computed(() => {
   const searchLower = searchQuery.value.toLowerCase();
   return users.value.filter(user =>
     (user.name || '').toLowerCase().includes(searchLower) ||
-    (user.email || '').toLowerCase().includes(searchLower)
+    (user.email || '').toLowerCase().includes(searchLower) ||
+    (user.role || '').toLowerCase().includes(searchLower)
   );
 });
 
-// Pagination
 const totalPages = computed(() => Math.ceil(filteredUsers.value.length / itemsPerPage));
 
 const paginatedUsers = computed(() => {
@@ -176,33 +161,28 @@ const nextPage = () => {
   }
 };
 
-// Toggle Filter Menu
-const toggleFilterMenu = () => {
-  isFilterMenuVisible.value = !isFilterMenuVisible.value;
-};
-
-// Edit User
 const editUser = (user: User) => {
   router.push({ name: 'ManageUserEdit', params: { userId: user.id } });
 };
 
-// Delete User
 const deleteUser = async (userId: string) => {
   const userRef = doc(dataBase, 'users', userId);
   try {
     await deleteDoc(userRef);
     alert('User deleted successfully!');
-    fetchUsers();  // Refresh the user list after deletion
+    fetchUsers();
   } catch (error) {
     console.error('Error deleting user:', error);
     alert('Failed to delete user.');
   }
 };
+
 </script>
 
 <style scoped>
+
 ion-content {
-  --background: #f9fafc;
+  --background: #f4f7fa;
   font-family: 'Arial', sans-serif;
 }
 
@@ -216,60 +196,44 @@ ion-content {
 }
 
 .search-filter-container {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 20px;
-}
-
-.search-bar {
-  flex: 8; /* 80% */
-}
-
-.filter-icon {
-  flex: 2; /* 20% */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.filter-sort {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .table-container {
   background-color: #ffffff;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  padding: 15px;
 }
 
 .table-header {
   font-weight: bold;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
 }
 
 ion-item {
-  --background-hover: #f5f5f5;
+  --background-hover: #f7f7f7;
   border-radius: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-ion-icon {
-  color: #666;
-}
-
-ion-label h2 {
-  font-size: 16px;
+ion-item h2 {
+  font-size: 18px;
   font-weight: bold;
+  margin: 0;
   color: #333;
 }
 
-ion-label p {
+ion-item p {
+  margin: 4px 0;
+  color: #555;
   font-size: 14px;
-  color: #666;
+}
+
+ion-buttons ion-button {
+  margin-left: 10px;
 }
 
 .pagination {
@@ -283,7 +247,37 @@ ion-label p {
   color: #333;
 }
 
-.table-column {
-  flex: 1;
+ion-button {
+  --border-radius: 8px;
+}
+
+ion-button[fill="outline"] {
+  --border-color: #ccc;
+  --border-width: 1px;
+  --color: #333;
+}
+
+ion-button[fill="outline"]:hover {
+  --background: #f2f2f2;
+}
+
+ion-button[color="success"] {
+  --background: #28a745;
+  --color: white;
+}
+
+ion-button[color="primary"] {
+  --background: #007bff;
+  --color: white;
+}
+
+ion-button[color="danger"] {
+  --background: #dc3545;
+  --color: white;
+}
+
+ion-button[color="tertiary"] {
+  --background: #f0f0f0;
+  --color: #007bff;
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-buttons slot="end">
-          <ion-button @click="() => router.push('/dashboard')">
+          <ion-button @click="() => router.push('/dashboard')" color="light">
             <ion-icon slot="icon-only" :icon="home"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -15,21 +15,20 @@
       <div class="crud-container">
         <!-- Add Donation Target Button -->
         <div class="header-actions">
-          <ion-button expand="block" @click="() => router.push('/manage-target/add')">
+          <ion-button expand="block" @click="() => router.push('/manage-target/add')" color="success">
             <ion-icon slot="start" :icon="add"></ion-icon>
             Add New Donation Target
           </ion-button>
         </div>
 
-        <!-- Search and Filter Section -->
+        <!-- Search Section -->
         <div class="search-filter-container">
-          <div class="search-bar">
-            <ion-searchbar
-              v-model="searchQuery"
-              debounce="500"
-              placeholder="Search donation targets..."
-            ></ion-searchbar>
-          </div>
+          <ion-searchbar
+            v-model="searchQuery"
+            debounce="500"
+            placeholder="Search donation targets..."
+            show-clear-button="focus"
+          ></ion-searchbar>
         </div>
 
         <!-- Donation Targets Table -->
@@ -43,31 +42,37 @@
             </ion-item>
 
             <!-- Table Rows -->
-            <ion-item v-for="target in paginatedTargets" :key="target.id">
+            <ion-item v-for="target in paginatedTargets" :key="target.id" lines="inset">
               <ion-label>
                 <h2>{{ target.name }}</h2>
                 <p>{{ target.description }}</p>
               </ion-label>
-              <ion-button color="primary" fill="outline" @click="editTarget(target)">
-                <ion-icon slot="icon-only" :icon="create"></ion-icon>
-              </ion-button>
-              <ion-button color="danger" fill="outline" @click="deleteTarget(target.id)">
-                <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-              </ion-button>
+              <ion-buttons slot="end">
+                <ion-button color="primary" fill="outline" @click="editTarget(target)">
+                  <ion-icon slot="icon-only" :icon="create"></ion-icon>
+                </ion-button>
+                <ion-button color="danger" fill="outline" @click="deleteTarget(target.id)">
+                  <ion-icon slot="icon-only" :icon="trash"></ion-icon>
+                </ion-button>
+              </ion-buttons>
             </ion-item>
           </ion-list>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-          <ion-button :disabled="currentPage === 1" @click="previousPage">
-            Previous
-          </ion-button>
-          <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <ion-button :disabled="currentPage === totalPages" @click="nextPage">
-            Next
-          </ion-button>
-        </div>
+    <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+    </ion-button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+        <path d="M9 18l6-6-6-6"></path>
+      </svg>
+    </ion-button>
+  </div>
       </div>
     </ion-content>
   </ion-page>
@@ -90,31 +95,27 @@ type DonationTarget = {
   description: string;
 };
 
-// Reactive Variables
 const targets = ref<DonationTarget[]>([]);
-const itemsPerPage = 5;
+const itemsPerPage = 4;
 const currentPage = ref(1);
 const searchQuery = ref('');
 
-// Fetch Donation Targets
 const fetchTargets = async () => {
   const querySnapshot = await getDocs(collection(dataBase, 'donation-targets'));
   targets.value = querySnapshot.docs.map(doc => {
     const data = doc.data();
     return {
       id: doc.id,
-      name: data.name || 'Unnamed Target', // Fallback for missing name
+      name: data.name || 'Unnamed Target',
       description: data.description || 'No Description',
     } as DonationTarget;
   });
 };
 
-// Call fetchTargets on component mount
 onMounted(() => {
   fetchTargets();
 });
 
-// Listen for the custom data-updated event
 const refreshData = () => {
   fetchTargets();
 };
@@ -127,7 +128,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('data-updated', refreshData);
 });
 
-// Search Donation Targets
 const filteredTargets = computed(() => {
   const searchLower = searchQuery.value.toLowerCase();
   return targets.value.filter(target =>
@@ -136,7 +136,6 @@ const filteredTargets = computed(() => {
   );
 });
 
-// Pagination
 const totalPages = computed(() => Math.ceil(filteredTargets.value.length / itemsPerPage));
 
 const paginatedTargets = computed(() => {
@@ -157,28 +156,28 @@ const nextPage = () => {
   }
 };
 
-// Edit Donation Target
 const editTarget = (target: DonationTarget) => {
   router.push({ name: 'ManageTargetEdit', params: { targetId: target.id } });
 };
 
-// Delete Donation Target
 const deleteTarget = async (targetId: string) => {
   const targetRef = doc(dataBase, 'donation-targets', targetId);
   try {
     await deleteDoc(targetRef);
     alert('Donation target deleted successfully!');
-    fetchTargets(); // Refresh the donation target list after deletion
+    fetchTargets();
   } catch (error) {
     console.error('Error deleting donation target:', error);
     alert('Failed to delete donation target.');
   }
 };
+
 </script>
 
 <style scoped>
+
 ion-content {
-  --background: #f9fafc;
+  --background: #f4f7fa;
   font-family: 'Arial', sans-serif;
 }
 
@@ -197,19 +196,39 @@ ion-content {
 
 .table-container {
   background-color: #ffffff;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  padding: 15px;
 }
 
 .table-header {
   font-weight: bold;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
 }
 
 ion-item {
-  --background-hover: #f5f5f5;
+  --background-hover: #f7f7f7;
   border-radius: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+ion-item h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+ion-item p {
+  margin: 4px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+ion-buttons ion-button {
+  margin-left: 10px;
 }
 
 .pagination {
@@ -221,5 +240,39 @@ ion-item {
   margin: 0 15px;
   font-size: 14px;
   color: #333;
+}
+
+ion-button {
+  --border-radius: 8px;
+}
+
+ion-button[fill="outline"] {
+  --border-color: #ccc;
+  --border-width: 1px;
+  --color: #333;
+}
+
+ion-button[fill="outline"]:hover {
+  --background: #f2f2f2;
+}
+
+ion-button[color="success"] {
+  --background: #28a745;
+  --color: white;
+}
+
+ion-button[color="primary"] {
+  --background: #007bff;
+  --color: white;
+}
+
+ion-button[color="danger"] {
+  --background: #dc3545;
+  --color: white;
+}
+
+ion-button[color="tertiary"] {
+  --background: #f0f0f0;
+  --color: #007bff;
 }
 </style>

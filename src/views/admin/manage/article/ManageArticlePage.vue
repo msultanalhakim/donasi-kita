@@ -1,251 +1,313 @@
 <template>
-    <ion-page>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Manage Articles</ion-title>
-        </ion-toolbar>
-      </ion-header>
-  
-      <ion-content fullscreen>
-        <div class="crud-container">
-          <!-- Add Article Button -->
-          <div class="header-actions">
-            <ion-button expand="block" @click="addArticle">
-              <ion-icon slot="start" name="add-outline"></ion-icon>
-              Add New Article
-            </ion-button>
-          </div>
-  
-          <!-- Search and Filter Section (80:20 ratio) -->
-          <div class="search-filter-container">
-            <!-- Search Bar (80%) -->
-            <div class="search-bar">
-              <ion-searchbar v-model="searchQuery" debounce="500" placeholder="Search articles..."></ion-searchbar>
-            </div>
-  
-            <!-- Filter Icon (20%) -->
-            <div class="filter-icon">
-              <ion-icon name="filter-outline" @click="toggleFilterMenu"></ion-icon>
-            </div>
-          </div>
-  
-          <!-- Filter Section (Hidden by Default) -->
-          <div v-if="isFilterMenuVisible" class="filter-sort">
-            <ion-item>
-              <ion-label>Sort By</ion-label>
-              <ion-select v-model="sortOption" @ionChange="sortArticles">
-                <ion-select-option value="title">Article Title</ion-select-option>
-                <ion-select-option value="date">Date Published</ion-select-option>
-              </ion-select>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="end">
+          <ion-button @click="() => router.push('/dashboard')" color="light">
+            <ion-icon slot="icon-only" :icon="home"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Manage Articles</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content fullscreen>
+      <div class="crud-container">
+        <!-- Add Article Button -->
+        <div class="header-actions">
+          <ion-button expand="block" @click="() => router.push('/manage-articles/add')" color="success">
+            <ion-icon slot="start" :icon="add"></ion-icon>
+            Add New Article
+          </ion-button>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-filter-container">
+          <ion-searchbar
+            v-model="searchQuery"
+            debounce="500"
+            placeholder="Search articles..."
+            show-clear-button="focus"
+          ></ion-searchbar>
+        </div>
+
+        <!-- Articles Table -->
+        <div class="table-container">
+          <ion-list>
+            <!-- Table Header -->
+            <ion-item class="table-header">
+              <ion-label class="table-column">Title</ion-label>
+              <ion-label class="table-column">Author</ion-label>
+              <ion-label class="table-column">Desc</ion-label>
+              <ion-label class="table-column">CreatedAt </ion-label>
+              <ion-label class="table-column">LastUpdat</ion-label>
+              <ion-label class="table-column">Actions</ion-label>
             </ion-item>
-          </div>
-  
-          <!-- Articles Table -->
-          <div class="table-container">
-            <ion-list>
-              <!-- Table Header -->
-              <ion-item class="table-header">
-                <ion-label class="table-column">Title</ion-label>
-                <ion-label class="table-column">Date Published</ion-label>
-                <ion-label class="table-column">Actions</ion-label>
-              </ion-item>
-              
-              <!-- Table Rows -->
-              <ion-item v-for="article in paginatedArticles" :key="article.id">
-                <ion-label>
-                  <h2>{{ article.title }}</h2>
-                  <p>{{ article.datePublished }}</p>
-                </ion-label>
-                <ion-button color="primary" fill="outline" @click="editArticle(article.id)">
+
+            <!-- Table Rows -->
+            <ion-item v-for="article in paginatedArticles" :key="article.id" lines="inset">
+              <ion-label>
+                <h2>{{ article.title }}</h2>
+                <p><strong>Author:</strong> {{ article.author }}</p>
+                <p><strong>Description:</strong> {{ article.description }}</p>
+                <p><strong>Created At:</strong> {{ formatDate(article.createdAt) }}</p>
+                <p><strong>Last Updated:</strong> {{ formatDate(article.lastUpdated) }}</p>
+              </ion-label>
+              <ion-buttons slot="end">
+                <ion-button color="primary" fill="outline" @click="editArticle(article)">
                   <ion-icon slot="icon-only" :icon="create"></ion-icon>
                 </ion-button>
                 <ion-button color="danger" fill="outline" @click="deleteArticle(article.id)">
                   <ion-icon slot="icon-only" :icon="trash"></ion-icon>
                 </ion-button>
-              </ion-item>
-            </ion-list>
-          </div>
-  
-          <!-- Pagination -->
-          <div class="pagination">
-            <ion-button :disabled="currentPage === 1" @click="previousPage">
-              Previous
-            </ion-button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <ion-button :disabled="currentPage === totalPages" @click="nextPage">
-              Next
-            </ion-button>
-          </div>
+              </ion-buttons>
+            </ion-item>
+          </ion-list>
         </div>
-      </ion-content>
-    </ion-page>
-  </template>
-  
-  <script setup lang="ts">
-  import { ref, computed } from 'vue';
-  import { trash, create } from "ionicons/icons";
-  
-  // Example Article Data
-  const articles = ref([
-    { id: 1, title: 'How to Build a Vue App', datePublished: '2024-11-01' },
-    { id: 2, title: 'Getting Started with Ionic', datePublished: '2024-10-25' },
-    { id: 3, title: 'Mastering JavaScript', datePublished: '2024-09-15' },
-    { id: 4, title: 'Understanding Vuex', datePublished: '2024-11-10' },
-    { id: 5, title: 'CSS Grid Layout', datePublished: '2024-08-30' },
-    { id: 6, title: 'Introduction to TypeScript', datePublished: '2024-11-05' },
-  ]);
-  
-  const sortOption = ref('title');
-  const itemsPerPage = 3;
-  const currentPage = ref(1);
-  const searchQuery = ref('');
-  const isFilterMenuVisible = ref(false);
-  
-  // Methods for CRUD operations
-  const addArticle = () => {
-    console.log('Add Article');
-  };
-  
-  const editArticle = (id: number) => {
-    console.log(`Edit Article: ${id}`);
-  };
-  
-  const deleteArticle = (id: number) => {
-    console.log(`Delete Article: ${id}`);
-  };
-  
-  // Sorting Functionality
-  const sortArticles = () => {
-    articles.value.sort((a, b) => {
-      if (sortOption.value === 'title') {
-        return a.title.localeCompare(b.title);
-      } else if (sortOption.value === 'date') {
-        return new Date(a.datePublished).getTime() - new Date(b.datePublished).getTime();
-      }
-      return 0;
+
+        <!-- Pagination -->
+        <!-- Pagination -->
+        <div class="pagination">
+    <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+    </ion-button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+        <path d="M9 18l6-6-6-6"></path>
+      </svg>
+    </ion-button>
+  </div>
+      </div>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { dataBase } from '@/firebase';
+import { trash, create, add, home } from 'ionicons/icons';
+
+// Router
+const router = useRouter();
+
+// Define the Article type
+type Article = {
+  id: string;
+  title: string;
+  author: string;
+  description: string;
+  createdAt: string;
+  lastUpdated: string;
+};
+
+// Reactive Variables
+const articles = ref<Article[]>([]);
+const itemsPerPage = 4;
+const currentPage = ref(1);
+const searchQuery = ref('');
+
+const fetchArticles = async () => {
+  const querySnapshot = await getDocs(collection(dataBase, 'articles'));
+  articles.value = querySnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      title: data.title || 'Untitled Article',
+      author: data.author || 'Unknown Author',
+      description: data.description || 'No Description',
+      createdAt: data.createdAt || null, // Menyimpan timestamp atau null jika tidak ada
+      lastUpdated: data.lastUpdated || null, // Menyimpan timestamp atau null jika tidak ada
+    } as Article;
+  });
+};
+
+
+// Call fetchArticles on component mount
+onMounted(() => {
+  fetchArticles();
+});
+
+// Listen for the custom data-updated event
+const refreshData = () => {
+  fetchArticles();
+};
+
+onMounted(() => {
+  window.addEventListener('data-updated', refreshData);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('data-updated', refreshData);
+});
+
+// Search Articles
+const filteredArticles = computed(() => {
+  const searchLower = searchQuery.value.toLowerCase();
+  return articles.value.filter((article) =>
+    (article.title || '').toLowerCase().includes(searchLower) ||
+    (article.author || '').toLowerCase().includes(searchLower) ||
+    (article.description || '').toLowerCase().includes(searchLower)
+  );
+});
+
+// Pagination
+const totalPages = computed(() => Math.ceil(filteredArticles.value.length / itemsPerPage));
+
+const paginatedArticles = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredArticles.value.slice(start, end);
+});
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+// Edit Article
+const editArticle = (article: Article) => {
+  router.push({ name: 'ManageArticlesEdit', params: { articleId: article.id } });
+};
+
+// Delete Article
+const deleteArticle = async (articleId: string) => {
+  const articleRef = doc(dataBase, 'articles', articleId);
+  try {
+    await deleteDoc(articleRef);
+    alert('Article deleted successfully!');
+    fetchArticles(); // Refresh the articles list after deletion
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    alert('Failed to delete article.');
+  }
+};
+const formatDate = (timestamp: any) => {
+  if (!timestamp) return 'N/A'; // Jika timestamp kosong atau tidak ada data
+  if (timestamp instanceof Object && timestamp.seconds) { // Memeriksa apakah timestamp adalah objek Firebase Timestamp
+    const date = new Date(timestamp.seconds * 1000); // Mengonversi timestamp menjadi objek Date
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
-  };
-  
-  // Search Functionality
-  const filteredArticles = computed(() => {
-    const searchLower = searchQuery.value.toLowerCase();
-    return articles.value.filter(article =>
-      article.title.toLowerCase().includes(searchLower) || article.datePublished.toLowerCase().includes(searchLower)
-    );
-  });
-  
-  // Pagination Functionality
-  const totalPages = computed(() => Math.ceil(filteredArticles.value.length / itemsPerPage));
-  
-  const paginatedArticles = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return filteredArticles.value.slice(start, end);
-  });
-  
-  const previousPage = () => {
-    if (currentPage.value > 1) {
-      currentPage.value--;
-    }
-  };
-  
-  const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
-      currentPage.value++;
-    }
-  };
-  
-  // Toggle the filter menu visibility
-  const toggleFilterMenu = () => {
-    isFilterMenuVisible.value = !isFilterMenuVisible.value;
-  };
-  </script>
-  
-  <style scoped>
-  ion-content {
-    --background: #f9fafc;
-    font-family: 'Arial', sans-serif;
   }
-  
-  .crud-container {
-    padding: 20px;
-  }
-  
-  .header-actions {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  .search-filter-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  
-  .search-bar {
-    flex: 8; /* 80% */
-  }
-  
-  .filter-icon {
-    flex: 2; /* 20% */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .filter-sort {
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .table-container {
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-  }
-  
-  .table-header {
-    font-weight: bold;
-  }
-  
-  ion-item {
-    --background-hover: #f5f5f5;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  
-  ion-icon {
-    color: #666;
-  }
-  
-  ion-label h2 {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  ion-label p {
-    font-size: 14px;
-    color: #666;
-  }
-  
-  .pagination {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  .pagination span {
-    margin: 0 15px;
-    font-size: 14px;
-    color: #333;
-  }
-  
-  .table-column {
-    flex: 1;
-  }
-  </style>
-  
+  return 'Invalid Date'; // Mengembalikan jika data tidak sesuai
+};
+
+
+</script>
+<style scoped>
+ion-content {
+  --background: #f4f7fa;
+  font-family: 'Arial', sans-serif;
+}
+
+.crud-container {
+  padding: 20px;
+}
+
+.header-actions {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.search-filter-container {
+  margin-bottom: 20px;
+}
+
+.table-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+}
+
+.table-header {
+  font-weight: bold;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+ion-item {
+  --background-hover: #f7f7f7;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+ion-item h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+ion-item p {
+  margin: 4px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+ion-buttons ion-button {
+  margin-left: 10px;
+}
+
+.pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pagination span {
+  margin: 0 15px;
+  font-size: 14px;
+  color: #333;
+}
+
+ion-button {
+  --border-radius: 8px;
+}
+
+ion-button[fill="outline"] {
+  --border-color: #ccc;
+  --border-width: 1px;
+  --color: #333;
+}
+
+ion-button[fill="outline"]:hover {
+  --background: #f2f2f2;
+}
+
+ion-button[color="success"] {
+  --background: #28a745;
+  --color: white;
+}
+
+ion-button[color="primary"] {
+  --background: #007bff;
+  --color: white;
+}
+
+ion-button[color="danger"] {
+  --background: #dc3545;
+  --color: white;
+}
+
+ion-button[color="tertiary"] {
+  --background: #f0f0f0;
+  --color: #007bff;
+}
+</style>
+
