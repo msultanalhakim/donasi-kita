@@ -109,7 +109,7 @@ const routes: Array<RouteRecordRaw> = [
     component: ManageCategoryAddPage,
   },
   {
-    path: "/manage-category/edit/:id",
+    path: "/manage-category/edit/:categoriesId",
     name: "ManageCategoryEdit",
     component: ManageCategoryEditPage,
   },

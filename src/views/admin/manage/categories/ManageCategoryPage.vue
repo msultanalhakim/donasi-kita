@@ -1,58 +1,28 @@
 <template>
   <ion-page>
-    <!-- Side Menu -->
-    <ion-menu side="start" menu-id="first" content-id="main-content">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Menu</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-list>
-          <ion-item button @click="() => router.push('/dashboard')">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
-            Dashboard
-          </ion-item>
-          <ion-item button @click="() => router.push('/manage-user')">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
-            Manage Users
-          </ion-item>
-          <ion-item button @click="() => router.push('/manage-category')">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
-            Manage Categories
-          </ion-item>
-          <ion-item button @click="navigateTo('settings')">
-            <ion-icon slot="start" :icon="settingsOutline"></ion-icon>
-            Settings
-          </ion-item>
-        </ion-list>
-      </ion-content>
-    </ion-menu>
-
-    <!-- Main Content -->
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-          <!-- Menu Button -->
+        <ion-buttons slot="end">
+          <ion-button @click="() => router.push('/dashboard')">
+            <ion-icon slot="icon-only" :icon="home"></ion-icon>
+          </ion-button>
         </ion-buttons>
         <ion-title>Manage Categories</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content id="main-content" fullscreen>
+    <ion-content fullscreen>
       <div class="crud-container">
         <!-- Add Category Button -->
         <div class="header-actions">
-          <ion-button expand="block" @click="addCategory">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
+          <ion-button expand="block" @click="() => router.push('/manage-category/add')">
+            <ion-icon slot="start" :icon="add"></ion-icon>
             Add New Category
           </ion-button>
         </div>
 
-        <!-- Search and Filter Section (80:20 ratio) -->
+        <!-- Search and Filter Section -->
         <div class="search-filter-container">
-          <!-- Search Bar (80%) -->
           <div class="search-bar">
             <ion-searchbar
               v-model="searchQuery"
@@ -60,27 +30,6 @@
               placeholder="Search categories..."
             ></ion-searchbar>
           </div>
-
-          <!-- Filter Icon (20%) -->
-          <div class="filter-icon">
-            <ion-icon
-              :icon="filterOutline"
-              @click="toggleFilterMenu"
-            ></ion-icon>
-          </div>
-        </div>
-
-        <!-- Filter Section (Hidden by Default) -->
-        <div v-if="isFilterMenuVisible" class="filter-sort">
-          <ion-item>
-            <ion-label>Sort By</ion-label>
-            <ion-select v-model="sortOption" @ionChange="sortCategories">
-              <ion-select-option value="name">Name</ion-select-option>
-              <ion-select-option value="description"
-                >Description</ion-select-option
-              >
-            </ion-select>
-          </ion-item>
         </div>
 
         <!-- Categories Table -->
@@ -89,30 +38,20 @@
             <!-- Table Header -->
             <ion-item class="table-header">
               <ion-label class="table-column">Category Name</ion-label>
+              <ion-label class="table-column">Description</ion-label>
               <ion-label class="table-column">Actions</ion-label>
             </ion-item>
 
             <!-- Table Rows -->
-            <ion-item
-              v-for="category in paginatedCategories"
-              :key="category.id"
-            >
+            <ion-item v-for="category in paginatedCategories" :key="category.id">
               <ion-label>
                 <h2>{{ category.name }}</h2>
                 <p>{{ category.description }}</p>
               </ion-label>
-              <ion-button
-                color="primary"
-                fill="outline"
-                @click="editCategory(category.id)"
-              >
+              <ion-button color="primary" fill="outline" @click="editCategory(category)">
                 <ion-icon slot="icon-only" :icon="create"></ion-icon>
               </ion-button>
-              <ion-button
-                color="danger"
-                fill="outline"
-                @click="deleteCategory(category.id)"
-              >
+              <ion-button color="danger" fill="outline" @click="deleteCategory(category.id)">
                 <ion-icon slot="icon-only" :icon="trash"></ion-icon>
               </ion-button>
             </ion-item>
@@ -135,116 +74,70 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
-import { ref, computed, onMounted } from "vue";
-import {
-  trash,
-  create,
-  filterOutline,
-  addOutline,
-  settingsOutline,
-} from "ionicons/icons";
+import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { dataBase } from '@/firebase';
+import { trash, create, add, home } from 'ionicons/icons';
 
-import { dataBase } from "@/firebase"; // Firestore instance
-import { collection, deleteDoc, doc, getDocs } from "firebase/firestore"; // Firestore API
-
-// State management
-const categories = ref([]);
-const isLoading = ref(false);
-const errorMessage = ref("");
+// Router
 const router = useRouter();
 
-// Fetch categories from Firestore
-const fetchCategories = async () => {
-  isLoading.value = true;
-  try {
-    const querySnapshot = await getDocs(collection(dataBase, "categories"));
-    const data = querySnapshot.docs.map((doc) => {
-      const docData = doc.data();
-      return {
-        id: doc.id,
-        name: docData.name || "Unnamed Category",
-        description: docData.description || "No description provided",
-      };
-    });
-    console.log("Categories from Firestore:", data);
-    return data; // Mengembalikan array data
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    return []; // Mengembalikan array kosong jika terjadi kesalahan
-  } finally {
-    isLoading.value = false;
-  }
+// Define the Category type
+type Category = {
+  id: string;
+  name: string;
+  description: string;
 };
 
-//delete
-const deleteCategory = async (categoriesId: string) => {
-  try {
-    const categoriesRef = doc(dataBase, "categories", categoriesId);
-    await deleteDoc(categoriesRef);
-    console.log("Document deleted with ID: ", categoriesId);
-    alert("Category successfully updated!");
-  } catch (e) {
-    console.error("Error deleting document: ", e);
-    throw e;
-  }
-};
-
-// Example Category Data
-// const categories = ref([
-//   { id: 1, name: "Electronics", description: "Devices and gadgets" },
-//   { id: 2, name: "Furniture", description: "Home and office furniture" },
-//   { id: 3, name: "Clothing", description: "Apparel and accessories" },
-//   { id: 4, name: "Books", description: "All kinds of books" },
-//   { id: 5, name: "Toys", description: "Children and adult toys" },
-//   { id: 6, name: "Sports", description: "Sporting goods" },
-// ]);
-
-const sortOption = ref("name");
-const itemsPerPage = 3;
+// Reactive Variables
+const categories = ref<Category[]>([]);
+const itemsPerPage = 5;
 const currentPage = ref(1);
-const searchQuery = ref("");
-const isFilterMenuVisible = ref(false);
+const searchQuery = ref('');
 
-// Methods for CRUD operations
-
-const addCategory = () => {
-  router.push("/manage-category/add");
-};
-
-const editCategory = (id: string) => {
-  console.log(`Edit Category: ${id}`);
-  router.push({ name: "ManageCategoryEdit", params: { id } });
-};
-
-// Sorting Functionality
-const sortCategories = () => {
-  categories.value.sort((a, b) => {
-    if (sortOption.value === "name") {
-      return a.name.localeCompare(b.name);
-    } else if (sortOption.value === "description") {
-      return a.description.localeCompare(b.description);
-    }
-    return 0;
+// Fetch Categories
+const fetchCategories = async () => {
+  const querySnapshot = await getDocs(collection(dataBase, 'categories'));
+  categories.value = querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name || 'Unnamed Category', // Fallback for missing name
+      description: data.description || 'No Description',
+    } as Category;
   });
 };
 
-// Search Functionality
-const filteredCategories = computed(() => {
-  const searchLower = searchQuery.value.toLowerCase();
-  const result = categories.value.filter(
-    (category) =>
-      category.name.toLowerCase().includes(searchLower) ||
-      category.description.toLowerCase().includes(searchLower)
-  );
-  console.log("Filtered Categories:", result);
-  return result;
+// Call fetchCategories on component mount
+onMounted(() => {
+  fetchCategories();
 });
 
-// Pagination Functionality
-const totalPages = computed(() =>
-  Math.ceil(filteredCategories.value.length / itemsPerPage)
-);
+// Listen for the custom data-updated event
+const refreshData = () => {
+  fetchCategories();
+};
+
+onMounted(() => {
+  window.addEventListener('data-updated', refreshData);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('data-updated', refreshData);
+});
+
+// Search Categories
+const filteredCategories = computed(() => {
+  const searchLower = searchQuery.value.toLowerCase();
+  return categories.value.filter(category =>
+    (category.name || '').toLowerCase().includes(searchLower) ||
+    (category.description || '').toLowerCase().includes(searchLower)
+  );
+});
+
+// Pagination
+const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage));
 
 const paginatedCategories = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
@@ -264,31 +157,29 @@ const nextPage = () => {
   }
 };
 
-// Toggle the filter menu visibility
-const toggleFilterMenu = () => {
-  isFilterMenuVisible.value = !isFilterMenuVisible.value;
-};
-// Navigation Function
-const navigateTo = (page: string) => {
-  console.log(`Navigate to ${page}`);
+// Edit Category
+const editCategory = (category: Category) => {
+  router.push({ name: 'ManageCategoryEdit', params: { categoriesId: category.id } });
 };
 
-//onmounted
-onMounted(async () => {
+// Delete Category
+const deleteCategory = async (categoriesId: string) => {
+  const categoryRef = doc(dataBase, 'categories', categoriesId);
   try {
-    console.log("Fetching categories...");
-    categories.value = await fetchCategories(); // Simpan langsung hasil dari fetch
-    console.log("Mapped Categories Data:", categories.value);
+    await deleteDoc(categoryRef);
+    alert('Category deleted successfully!');
+    fetchCategories(); // Refresh the category list after deletion
   } catch (error) {
-    console.error("Error during onMounted:", error);
+    console.error('Error deleting category:', error);
+    alert('Failed to delete category.');
   }
-});
+};
 </script>
 
 <style scoped>
 ion-content {
   --background: #f9fafc;
-  font-family: "Arial", sans-serif;
+  font-family: 'Arial', sans-serif;
 }
 
 .crud-container {
@@ -301,28 +192,7 @@ ion-content {
 }
 
 .search-filter-container {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 20px;
-}
-
-.search-bar {
-  flex: 8; /* 80% */
-}
-
-.filter-icon {
-  flex: 2; /* 20% */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.filter-sort {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .table-container {
@@ -342,21 +212,6 @@ ion-item {
   margin-bottom: 10px;
 }
 
-ion-icon {
-  color: #666;
-}
-
-ion-label h2 {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-ion-label p {
-  font-size: 14px;
-  color: #666;
-}
-
 .pagination {
   text-align: center;
   margin-top: 20px;
@@ -366,9 +221,5 @@ ion-label p {
   margin: 0 15px;
   font-size: 14px;
   color: #333;
-}
-
-.table-column {
-  flex: 1;
 }
 </style>

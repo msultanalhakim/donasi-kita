@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/manage-category"></ion-back-button>
+          <ion-back-button default-href="/manage-categories"></ion-back-button>
         </ion-buttons>
         <ion-title>Edit Category</ion-title>
       </ion-toolbar>
@@ -18,7 +18,7 @@
 
           <ion-card-content>
             <form @submit.prevent="submitForm">
-              <!-- Name Field -->
+              <!-- Category Name Field -->
               <ion-item class="input-item">
                 <ion-label position="stacked">Category Name</ion-label>
                 <ion-input
@@ -35,7 +35,7 @@
                 <ion-input
                   type="text"
                   v-model="form.description"
-                  placeholder="Enter category description"
+                  placeholder="Enter description"
                   required
                 ></ion-input>
               </ion-item>
@@ -71,81 +71,83 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { dataBase } from "@/firebase"; // Firestore instance
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firestore API
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { dataBase } from '@/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore'; // Firestore functions
 
-const route = useRoute(); // Untuk mengambil parameter ID kategori dari URL
-const router = useRouter(); // Untuk navigasi setelah pembaruan
-
+// The form data model
 const form = ref({
-  name: "",
-  description: "",
+  name: '',
+  description: '',
 });
 
+const router = useRouter();
+const route = useRoute();
 const isSubmitting = ref(false);
 
-// Ambil data kategori berdasarkan ID dari URL
-const loadCategoryData = async () => {
-  const categoryId = route.params.id; // Ambil ID kategori dari URL
-  if (!categoryId) {
-    alert("Invalid category ID.");
-    return;
+// Get the categoryId from the route parameters
+const categoriesId = route.params.categoriesId;
+
+// Fetch the category data when the component is mounted
+onMounted(async () => {
+  if (categoriesId) {
+    await fetchCategoryData(categoriesId);
   }
+});
 
+// Function to fetch category data from Firestore
+const fetchCategoryData = async (categoriesId) => {
   try {
-    const categoryRef = doc(dataBase, "categories", categoryId); // Referensi dokumen kategori
-    const docSnap = await getDoc(categoryRef);
+    const categoryDocRef = doc(dataBase, "categories", categoriesId); // Assuming the collection is 'categories'
+    const categoryDocSnap = await getDoc(categoryDocRef);
 
-    if (docSnap.exists()) {
-      // Jika data ditemukan, isi form dengan data kategori
-      form.value = docSnap.data();
+    if (categoryDocSnap.exists()) {
+      const categoryData = categoryDocSnap.data();
+      form.value = { ...categoryData }; // Assuming category data contains name and description
     } else {
-      alert("Category not found.");
+      console.error("No such category found!");
     }
   } catch (error) {
-    console.error("Error fetching category data:", error);
-    alert("Failed to load category data.");
+    console.error('Error fetching category data:', error);
   }
 };
 
-// Kirim perubahan kategori ke Firestore
+// Function to submit the form and update category data in Firestore
 const submitForm = async () => {
-  const categoryId = route.params.id;
-  if (!categoryId) {
-    alert("Invalid category ID.");
-    return;
-  }
-
   isSubmitting.value = true;
   try {
-    const categoryRef = doc(dataBase, "categories", categoryId); // Referensi kategori untuk update
-    await updateDoc(categoryRef, {
+    const categoryDocRef = doc(dataBase, "categories", categoriesId); // Assuming the collection is 'categories'
+
+    // Update the document in Firestore
+    await updateDoc(categoryDocRef, {
       name: form.value.name,
       description: form.value.description,
     });
 
-    console.log("Category updated:", form.value);
-    alert("Category successfully updated!");
-    router.push("/manage-category"); // Navigasi ke halaman manage-category setelah update
+    // Fetch the updated data to refresh the form
+    await fetchCategoryData(categoriesId);
+
+    alert('Category information updated successfully!');
+    // Emit event to notify ManageCategory to refresh
+    router.push('/manage-category').then(() => {
+      window.dispatchEvent(new CustomEvent('data-updated'));  // Emit event here
+    });
   } catch (error) {
-    console.error("Error updating category:", error);
-    alert("Failed to update category. Please try again.");
+    console.error('Error updating category data:', error);
+    alert('Failed to update category. Please try again.');
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// Reset form ke data asli dari Firestore
+// Function to reset the form
 const resetForm = () => {
-  loadCategoryData(); // Memuat ulang data kategori
+  form.value = {
+    name: '',
+    description: '',
+  };
 };
-
-// Memuat data kategori saat halaman dimuat
-onMounted(() => {
-  loadCategoryData();
-});
 </script>
 
 <style scoped>
