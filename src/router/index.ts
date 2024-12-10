@@ -7,6 +7,7 @@ import { auth } from "@/firebase"; // Pastikan Anda memiliki konfigurasi Firebas
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
 import HomePage from "@/views/HomePage.vue";
+// import DonasiPage from "@/views/DonasiPage.vue";
 import ProfilePage from "@/views/ProfilePage.vue";
 import BerandaPage from "@/views/BerandaPage.vue";
 import BeritaPage from "@/views/BeritaPage.vue";
@@ -51,12 +52,13 @@ import ManageArticlePage from "@/views/admin/manage/article/ManageArticlePage.vu
 //   });
 // };
 
-// Routes
+//User Routes
 const routes: Array<RouteRecordRaw> = [
   { path: "/", redirect: "/login" },
   { path: "/login", name: "Login", component: LoginPage },
   { path: "/register", name: "Register", component: RegisterPage },
   { path: "/home", name: "Home", component: HomePage },
+  // { path: "/donasi", name: "Donasi", component: DonasiPage },
   { path: "/profile", name: "Profile", component: ProfilePage },
   { path: "/beranda", name: "Beranda", component: BerandaPage },
   { path: "/berita", name: "Berita", component: BeritaPage },
