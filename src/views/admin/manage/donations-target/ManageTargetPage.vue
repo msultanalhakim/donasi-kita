@@ -45,7 +45,7 @@
             <ion-item v-for="target in paginatedTargets" :key="target.id" lines="inset">
               <ion-label>
                 <h2>{{ target.name }}</h2>
-                <p>{{ target.description }}</p>
+                <p><strong>description : </strong>{{ target.description }}</p>
               </ion-label>
               <ion-buttons slot="end">
                 <ion-button color="primary" fill="outline" @click="editTarget(target)">
@@ -84,6 +84,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
 import { trash, create, add, home } from 'ionicons/icons';
+import { alertController, toastController } from '@ionic/vue';
 
 // Router
 const router = useRouter();
@@ -96,7 +97,7 @@ type DonationTarget = {
 };
 
 const targets = ref<DonationTarget[]>([]);
-const itemsPerPage = 4;
+const itemsPerPage = 5;
 const currentPage = ref(1);
 const searchQuery = ref('');
 
@@ -161,16 +162,53 @@ const editTarget = (target: DonationTarget) => {
 };
 
 const deleteTarget = async (targetId: string) => {
-  const targetRef = doc(dataBase, 'donation-targets', targetId);
-  try {
-    await deleteDoc(targetRef);
-    alert('Donation target deleted successfully!');
-    fetchTargets();
-  } catch (error) {
-    console.error('Error deleting donation target:', error);
-    alert('Failed to delete donation target.');
-  }
+  const alert = await alertController.create({
+    header: 'Confirm Delete',
+    message: 'Are you sure you want to delete this donation target?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          console.log('Delete canceled');
+        }
+      },
+      {
+        text: 'Yes',
+        handler: async () => {
+          const targetRef = doc(dataBase, 'donation-targets', targetId);
+          try {
+            await deleteDoc(targetRef);
+            console.log('Donation target deleted successfully!');
+            
+            // Show success toast notification
+            const toast = await toastController.create({
+              message: 'Donation target deleted successfully!',
+              duration: 2000,
+              color: 'danger',
+              position: 'top' 
+            });
+            toast.present();
+            
+            fetchTargets(); // Refresh the list of targets after deletion
+          } catch (error) {
+            console.error('Error deleting donation target:', error);
+            
+            // Show error toast notification
+            const toast = await toastController.create({
+              message: 'Error deleting donation target. Please try again.',
+              duration: 2000,
+              color: 'secondary'
+            });
+            toast.present();
+          }
+        }
+      }
+    ]
+  });
+  await alert.present();
 };
+
 
 </script>
 

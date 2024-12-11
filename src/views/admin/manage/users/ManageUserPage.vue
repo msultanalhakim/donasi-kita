@@ -13,14 +13,6 @@
 
     <ion-content fullscreen>
       <div class="crud-container">
-        <!-- Add User Button -->
-        <!-- <div class="header-actions">
-          <ion-button expand="block" @click="() => router.push('/manage-user/add')" color="success">
-            <ion-icon slot="start" :icon="add"></ion-icon>
-            Add New User
-          </ion-button>
-        </div> -->
-
         <!-- Search Section -->
         <div class="search-filter-container">
           <ion-searchbar
@@ -36,9 +28,12 @@
           <ion-list>
             <!-- Table Header -->
             <ion-item class="table-header">
-              <ion-label class="table-column">name</ion-label>
+              <ion-label class="table-column">Name</ion-label>
               <ion-label class="table-column">Email</ion-label>
               <ion-label class="table-column">Role</ion-label>
+              <!-- Conditional Columns -->
+              <ion-label class="table-column" v-if="showPhoneOrAddress">Phone</ion-label>
+              <ion-label class="table-column" v-if="showPhoneOrAddress">Addr</ion-label>
               <ion-label class="table-column">Actions</ion-label>
             </ion-item>
 
@@ -46,16 +41,20 @@
             <ion-item v-for="user in paginatedUsers" :key="user.id" lines="inset">
               <ion-label>
                 <h2>{{ user.name }}</h2>
-                <p>{{ user.email }}</p>
-                <p>{{ user.role }}</p>
+                <p><strong>Email : </strong>{{ user.email }}</p>
+                <!-- Conditional Data -->
+                <p v-if="user.role === 'user'"><strong>Phone : </strong>{{ user.phone || 'N/A' }}</p>
+                <p v-if="user.role === 'user'"><strong>Address : </strong>{{ user.address || 'N/A' }}</p>
+                <p><b>{{ user.role }}</b></p>
               </ion-label>
               <ion-buttons slot="end">
-                <!-- <ion-button color="primary" fill="outline" @click="editUser(user)">
+                <!-- Action Buttons -->
+                <ion-button color="primary" fill="outline" @click="editUser(user)">
                   <ion-icon slot="icon-only" :icon="create"></ion-icon>
-                </ion-button> -->
-                <!-- <ion-button color="danger" fill="outline" @click="deleteUser(user.id)">
+                </ion-button>
+                <ion-button color="danger" fill="outline" @click="deleteUser(user.id)">
                   <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-                </ion-button> -->
+                </ion-button>
               </ion-buttons>
             </ion-item>
           </ion-list>
@@ -80,6 +79,7 @@
   </ion-page>
 </template>
 
+
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
@@ -96,10 +96,12 @@ type User = {
   name: string;
   email: string;
   role: string;
+  phone?: number;
+  address?: string;
 };
 
 const users = ref<User[]>([]);
-const itemsPerPage = 4;
+const itemsPerPage = 5;
 const currentPage = ref(1);
 const searchQuery = ref('');
 
@@ -112,9 +114,13 @@ const fetchUsers = async () => {
       name: data.name || 'Unnamed User',
       email: data.email || 'No Email',
       role: data.role || 'No Role',
+      phone: data.phone || null,
+
+      address: data.address || null,
     } as User;
   });
 };
+
 
 onMounted(() => {
   fetchUsers();
@@ -176,7 +182,9 @@ const deleteUser = async (userId: string) => {
     alert('Failed to delete user.');
   }
 };
-
+const showPhoneOrAddress = computed(() => {
+  return users.value.some(user => user.phone || user.address);
+});
 </script>
 
 <style scoped>

@@ -54,6 +54,7 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { collection, addDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
+import { toastController } from '@ionic/vue';  // Import toastController
 
 // Router
 const router = useRouter();
@@ -62,10 +63,21 @@ const router = useRouter();
 const categoryName = ref('');
 const categoryDescription = ref('');
 
+// Function to show toast notifications
+const showToast = async (message: string, color: string) => {
+  const toast = await toastController.create({
+    message,
+    duration: 2000,
+    color : "success",
+    position: 'top',
+  });
+  toast.present();
+};
+
 // Function to Add Category
 const addCategory = async () => {
   if (!categoryName.value.trim()) {
-    alert('Category name is required!');
+    showToast('Category name is required!', 'danger');
     return;
   }
 
@@ -74,7 +86,8 @@ const addCategory = async () => {
       name: categoryName.value,
       description: categoryDescription.value || 'No description provided',
     });
-    alert('Category added successfully!');
+
+    showToast('Category added successfully!', 'success');
 
     // Emit event to notify ManageCategory to refresh
     router.push('/manage-category').then(() => {
@@ -82,7 +95,7 @@ const addCategory = async () => {
     });
   } catch (error) {
     console.error('Error adding category:', error);
-    alert('Failed to add category.');
+    showToast('Failed to add category. Please try again.', 'danger');
   }
 };
 

@@ -7,7 +7,7 @@
             <ion-icon slot="icon-only" :icon="home"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>Manage Articles</ion-title>
+        <ion-title>Manage Categories</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -44,7 +44,7 @@
             <ion-item v-for="category in paginatedCategories" :key="category.id" lines="inset">
               <ion-label>
                 <h2>{{ category.name }}</h2>
-                <p>{{ category.description }}</p>
+                <p><strong>description : </strong>{{ category.description }}</p>
               </ion-label>
               <ion-buttons slot="end">
                 <ion-button color="primary" fill="outline" @click="editCategory(category)">
@@ -82,6 +82,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
 import { trash, create, add, home } from 'ionicons/icons';
+import { alertController, toastController } from '@ionic/vue';
 
 // Router
 const router = useRouter();
@@ -95,7 +96,7 @@ type Category = {
 
 // Reactive Variables
 const categories = ref<Category[]>([]);
-const itemsPerPage = 4;
+const itemsPerPage = 5;
 const currentPage = ref(1);
 const searchQuery = ref('');
 
@@ -165,18 +166,55 @@ const editCategory = (category: Category) => {
   router.push({ name: 'ManageCategoryEdit', params: { categoriesId: category.id } });
 };
 
-// Delete Category
 const deleteCategory = async (categoriesId: string) => {
-  const categoryRef = doc(dataBase, 'categories', categoriesId);
-  try {
-    await deleteDoc(categoryRef);
-    alert('Category deleted successfully!');
-    fetchCategories(); // Refresh the category list after deletion
-  } catch (error) {
-    console.error('Error deleting category:', error);
-    alert('Failed to delete category.');
-  }
+  const alert = await alertController.create({
+    header: 'Confirm Delete',
+    message: 'Are you sure you want to delete this category?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          console.log('Delete canceled');
+        }
+      },
+      {
+        text: 'Yes',
+        handler: async () => {
+          const categoryRef = doc(dataBase, 'categories', categoriesId);
+          try {
+            await deleteDoc(categoryRef);
+            console.log('Category deleted successfully!');
+            
+            // Show success toast notification
+            const toast = await toastController.create({
+              message: 'Category deleted successfully!',
+              duration: 2000,
+              color: 'danger', // Use danger color for delete actions
+              position: 'top',
+            });
+            toast.present();
+
+            fetchCategories(); // Refresh the category list after deletion
+          } catch (error) {
+            console.error('Error deleting category:', error);
+
+            // Show error toast notification
+            const toast = await toastController.create({
+              message: 'Failed to delete category.',
+              duration: 2000,
+              color: 'danger', // Red color for error
+              position: 'top',
+            });
+            toast.present();
+          }
+        }
+      }
+    ]
+  });
+  await alert.present();
 };
+
 </script>
 <style scoped>
 

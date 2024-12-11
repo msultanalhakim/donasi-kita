@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/manage-donations"></ion-back-button>
+          <ion-back-button default-href="/manage-target"></ion-back-button>
         </ion-buttons>
         <ion-title>Edit Donation Target</ion-title>
       </ion-toolbar>
@@ -69,11 +69,13 @@
     </ion-content>
   </ion-page>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { dataBase } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore'; // Firestore functions
+import { toastController } from '@ionic/vue'; // Import toastController
 
 // The form data model
 const form = ref({
@@ -127,14 +129,30 @@ const submitForm = async () => {
     // Fetch the updated data to refresh the form
     await fetchDonationTargetData(targetId);
 
-    alert('Donation target information updated successfully!');
+    // Show success toast notification
+    const toast = await toastController.create({
+      message: 'Donation target updated successfully!',
+      duration: 2000,
+      color: 'secondary',
+      position: 'top'
+    });
+    toast.present();
+
     // Emit event to notify ManageTarget to refresh
     router.push('/manage-target').then(() => {
       window.dispatchEvent(new CustomEvent('data-updated'));  // Emit event here
     });
   } catch (error) {
     console.error('Error updating donation target data:', error);
-    alert('Failed to update donation target. Please try again.');
+
+    // Show error toast notification
+    const toast = await toastController.create({
+      message: 'Failed to update donation target. Please try again.',
+      duration: 2000,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
   } finally {
     isSubmitting.value = false;
   }
@@ -148,6 +166,7 @@ const resetForm = () => {
   };
 };
 </script>
+
 <style scoped>
 ion-content {
   --background: #f7f9fc;

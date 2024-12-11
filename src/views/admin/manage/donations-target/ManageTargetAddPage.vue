@@ -54,6 +54,7 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { collection, addDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
+import { toastController } from '@ionic/vue'; // Import toastController
 
 // Router
 const router = useRouter();
@@ -74,7 +75,15 @@ const addTarget = async () => {
       name: targetName.value,
       description: description.value || 'No description provided',
     });
-    alert('Donation target added successfully!');
+
+    // Show success toast notification
+    const toast = await toastController.create({
+      message: 'Donation target added successfully!',
+      duration: 2000,
+      color: 'success',
+      position: 'top',
+    });
+    toast.present();
 
     // Emit event to notify ManageTarget to refresh
     router.push('/manage-target').then(() => {
@@ -82,7 +91,15 @@ const addTarget = async () => {
     });
   } catch (error) {
     console.error('Error adding donation target:', error);
-    alert('Failed to add donation target.');
+
+    // Show error toast notification
+    const toast = await toastController.create({
+      message: 'Failed to add donation target. Please try again.',
+      duration: 2000,
+      color: 'danger',
+      position: 'top',
+    });
+    toast.present();
   }
 };
 

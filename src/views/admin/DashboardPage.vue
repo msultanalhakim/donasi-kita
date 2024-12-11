@@ -38,9 +38,13 @@
             <ion-icon :icon="peopleOutline" slot="start"></ion-icon>
             <ion-label>Manage Users</ion-label>
           </ion-item>
-          <ion-item button @click="() => router.push('/manage-user')">
+          <ion-item button @click="() => router.push('/manage-donation')">
             <ion-icon :icon="cashOutline" slot="start"></ion-icon>
             <ion-label>Manage Donations</ion-label>
+          </ion-item>
+          <ion-item button @click="() => router.push('/manage-category')">
+            <ion-icon :icon="pricetagsOutline" slot="start"></ion-icon>
+            <ion-label>Manage Item Categories</ion-label>
           </ion-item>
           <ion-item button @click="() => router.push('/manage-target')">
             <ion-icon :icon="storefront" slot="start"></ion-icon>
@@ -49,14 +53,6 @@
           <ion-item button @click="() => router.push('/manage-article')">
             <ion-icon :icon="newspaperOutline" slot="start"></ion-icon>
             <ion-label>Manage Articles</ion-label>
-          </ion-item>
-          <ion-item button @click="() => router.push('/manage-category')">
-            <ion-icon :icon="pricetagsOutline" slot="start"></ion-icon>
-            <ion-label>Manage Categories</ion-label>
-          </ion-item>
-          <ion-item button @click="() => router.push('/manage-campaign')">
-            <ion-icon :icon="giftOutline" slot="start"></ion-icon>
-            <ion-label>Manage Campaigns</ion-label>
           </ion-item>
           <ion-item button>
             <ion-icon :icon="settingsOutline" slot="start"></ion-icon>

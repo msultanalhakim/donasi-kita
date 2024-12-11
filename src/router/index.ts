@@ -26,8 +26,13 @@ import ManageCategoryPage from "@/views/admin/manage/categories/ManageCategoryPa
 import ManageCategoryAddPage from "@/views/admin/manage/categories/ManageCategoryAddPage.vue";
 import ManageCategoryEditPage from "@/views/admin/manage/categories/ManageCategoryEditPage.vue";
 
-import ManageCampaignPage from "@/views/admin/manage/campaign/ManageCampaignPage.vue";
 import ManageArticlePage from "@/views/admin/manage/article/ManageArticlePage.vue";
+import ManageArticleAddPage from "@/views/admin/manage/article/ManageArticleAddPage.vue";
+import ManageArticleEditPage from "@/views/admin/manage/article/ManageArticleEditPage.vue";
+
+import ManageDonationPage from "@/views/admin/manage/donations/ManageDonationPage.vue";
+import ManageDonationAddPage from "@/views/admin/manage/donations/ManageDonationAddPage.vue";
+import ManageDonationEditPage from "@/views/admin/manage/donations/ManageDonationEditPage.vue";
 
 // // Middleware
 // const authGuard = (to, from, next) => {
@@ -114,14 +119,34 @@ const routes: Array<RouteRecordRaw> = [
     component: ManageCategoryEditPage,
   },
   {
-    path: "/manage-campaign",
-    name: "ManageCampaign",
-    component: ManageCampaignPage,
-  },
-  {
     path: "/manage-article",
     name: "ManageArticle",
     component: ManageArticlePage,
+  },
+  {
+    path: "/manage-article/add",
+    name: "ManageArticleAdd",
+    component: ManageArticleAddPage,
+  },
+  {
+    path: "/manage-article/edit/:articleId",
+    name: "ManageArticleEdit",
+    component: ManageArticleEditPage,
+  },
+  {
+    path: "/manage-donation",
+    name: "ManageDonation",
+    component: ManageDonationPage,
+  },
+  {
+    path: "/manage-donation/add",
+    name: "ManageDonationAdd",
+    component: ManageDonationAddPage,
+  },
+  {
+    path: "/manage-donation/edit/:donationId",
+    name: "ManageDonationEdit",
+    component: ManageDonationEditPage,
   },
 ];
 

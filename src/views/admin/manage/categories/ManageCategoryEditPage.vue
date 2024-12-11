@@ -75,6 +75,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { dataBase } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore'; // Firestore functions
+import { toastController } from '@ionic/vue'; // Import toastController
 
 // The form data model
 const form = ref({
@@ -128,14 +129,30 @@ const submitForm = async () => {
     // Fetch the updated data to refresh the form
     await fetchCategoryData(categoriesId);
 
-    alert('Category information updated successfully!');
+    // Show success toast notification
+    const toast = await toastController.create({
+      message: 'Category information updated successfully!',
+      duration: 2000,
+      color: 'secondary',
+      position: 'top'
+    });
+    toast.present();
+
     // Emit event to notify ManageCategory to refresh
     router.push('/manage-category').then(() => {
       window.dispatchEvent(new CustomEvent('data-updated'));  // Emit event here
     });
   } catch (error) {
     console.error('Error updating category data:', error);
-    alert('Failed to update category. Please try again.');
+
+    // Show error toast notification
+    const toast = await toastController.create({
+      message: 'Failed to update category. Please try again.',
+      duration: 2000,
+      color: 'danger',
+      position: 'top'
+    });
+    toast.present();
   } finally {
     isSubmitting.value = false;
   }

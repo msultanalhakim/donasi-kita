@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="end">
-          <ion-button @click="() => router.push('/dashboard')" color="light">
+          <ion-button @click="navigateToDashboard" color="light">
             <ion-icon slot="icon-only" :icon="home"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -15,7 +15,7 @@
       <div class="crud-container">
         <!-- Add Article Button -->
         <div class="header-actions">
-          <ion-button expand="block" @click="() => router.push('/manage-articles/add')" color="success">
+          <ion-button expand="block" @click="navigateToAddArticle" color="success">
             <ion-icon slot="start" :icon="add"></ion-icon>
             Add New Article
           </ion-button>
@@ -39,8 +39,8 @@
               <ion-label class="table-column">Title</ion-label>
               <ion-label class="table-column">Author</ion-label>
               <ion-label class="table-column">Desc</ion-label>
-              <ion-label class="table-column">CreatedAt </ion-label>
-              <ion-label class="table-column">LastUpdat</ion-label>
+              <ion-label class="table-column">CA</ion-label>
+              <ion-label class="table-column">LU</ion-label>
               <ion-label class="table-column">Actions</ion-label>
             </ion-item>
 
@@ -48,10 +48,10 @@
             <ion-item v-for="article in paginatedArticles" :key="article.id" lines="inset">
               <ion-label>
                 <h2>{{ article.title }}</h2>
-                <p><strong>Author:</strong> {{ article.author }}</p>
-                <p><strong>Description:</strong> {{ article.description }}</p>
-                <p><strong>Created At:</strong> {{ formatDate(article.createdAt) }}</p>
-                <p><strong>Last Updated:</strong> {{ formatDate(article.lastUpdated) }}</p>
+                <p><strong>Author :</strong> {{ article.author }}</p>
+                <p><strong>Content :</strong> {{ article.description }}</p>
+                <p><strong>Created At :</strong> {{ formatDate(article.createdAt) }}</p>
+                <p><strong>Last Updated :</strong> {{ formatDate(article.lastUpdated) }}</p>
               </ion-label>
               <ion-buttons slot="end">
                 <ion-button color="primary" fill="outline" @click="editArticle(article)">
@@ -66,20 +66,19 @@
         </div>
 
         <!-- Pagination -->
-        <!-- Pagination -->
         <div class="pagination">
-    <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-        <path d="M15 18l-6-6 6-6"></path>
-      </svg>
-    </ion-button>
-    <span>Page {{ currentPage }} of {{ totalPages }}</span>
-    <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-        <path d="M9 18l6-6-6-6"></path>
-      </svg>
-    </ion-button>
-  </div>
+          <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          </ion-button>
+          <span>Page {{ currentPage }} of {{ totalPages }}</span>
+          <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          </ion-button>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -91,6 +90,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { dataBase } from '@/firebase';
 import { trash, create, add, home } from 'ionicons/icons';
+import { alertController, toastController } from '@ionic/vue';
 
 // Router
 const router = useRouter();
@@ -107,10 +107,11 @@ type Article = {
 
 // Reactive Variables
 const articles = ref<Article[]>([]);
-const itemsPerPage = 4;
+const itemsPerPage = 5;
 const currentPage = ref(1);
 const searchQuery = ref('');
 
+// Fetch Articles
 const fetchArticles = async () => {
   const querySnapshot = await getDocs(collection(dataBase, 'articles'));
   articles.value = querySnapshot.docs.map((doc) => {
@@ -120,12 +121,11 @@ const fetchArticles = async () => {
       title: data.title || 'Untitled Article',
       author: data.author || 'Unknown Author',
       description: data.description || 'No Description',
-      createdAt: data.createdAt || null, // Menyimpan timestamp atau null jika tidak ada
-      lastUpdated: data.lastUpdated || null, // Menyimpan timestamp atau null jika tidak ada
+      createdAt: data.createdAt || null, 
+      lastUpdated: data.lastUpdated || null, 
     } as Article;
   });
 };
-
 
 // Call fetchArticles on component mount
 onMounted(() => {
@@ -178,25 +178,62 @@ const nextPage = () => {
 
 // Edit Article
 const editArticle = (article: Article) => {
-  router.push({ name: 'ManageArticlesEdit', params: { articleId: article.id } });
+  router.push({ name: 'ManageArticleEdit', params: { articleId: article.id } });
 };
 
-// Delete Article
 const deleteArticle = async (articleId: string) => {
-  const articleRef = doc(dataBase, 'articles', articleId);
-  try {
-    await deleteDoc(articleRef);
-    alert('Article deleted successfully!');
-    fetchArticles(); // Refresh the articles list after deletion
-  } catch (error) {
-    console.error('Error deleting article:', error);
-    alert('Failed to delete article.');
-  }
+  const alert = await alertController.create({
+    header: 'Confirm Delete',
+    message: 'Are you sure you want to delete this donation target?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          console.log('Delete canceled');
+        }
+      },
+      {
+        text: 'Yes',
+        handler: async () => {
+          const targetRef = doc(dataBase, 'articles', articleId);
+          try {
+            await deleteDoc(targetRef);
+            console.log('Article deleted successfully!');
+            
+            // Show success toast notification
+            const toast = await toastController.create({
+              message: 'Article deleted successfully!',
+              duration: 2000,
+              color: 'danger', // Red color for danger (or success, depending on context)
+              position: 'top' 
+            });
+            toast.present();
+            
+            fetchArticles(); // Refresh the list of articles after deletion
+          } catch (error) {
+            console.error('Error deleting article:', error);
+            
+            // Show error toast notification
+            const toast = await toastController.create({
+              message: 'Error deleting article. Please try again.',
+              duration: 2000,
+              color: 'secondary '
+            });
+            toast.present();
+          }
+        }
+      }
+    ]
+  });
+  await alert.present();
 };
+
+// Format date
 const formatDate = (timestamp: any) => {
-  if (!timestamp) return 'N/A'; // Jika timestamp kosong atau tidak ada data
-  if (timestamp instanceof Object && timestamp.seconds) { // Memeriksa apakah timestamp adalah objek Firebase Timestamp
-    const date = new Date(timestamp.seconds * 1000); // Mengonversi timestamp menjadi objek Date
+  if (!timestamp) return 'N/A';
+  if (timestamp instanceof Object && timestamp.seconds) {
+    const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -204,11 +241,14 @@ const formatDate = (timestamp: any) => {
       day: 'numeric'
     });
   }
-  return 'Invalid Date'; // Mengembalikan jika data tidak sesuai
+  return 'Invalid Date';
 };
 
-
+// Navigation helpers
+const navigateToDashboard = () => router.push('/dashboard');
+const navigateToAddArticle = () => router.push('/manage-article/add');
 </script>
+
 <style scoped>
 ion-content {
   --background: #f4f7fa;
@@ -310,4 +350,3 @@ ion-button[color="tertiary"] {
   --color: #007bff;
 }
 </style>
-
