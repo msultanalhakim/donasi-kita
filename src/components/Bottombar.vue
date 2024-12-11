@@ -15,8 +15,8 @@
         <ion-label class="tab-label">Beranda</ion-label>
       </ion-tab-button>
 
-      <ion-tab-button tab="Wishlist" href="/wishlist">
-        <ion-icon :icon="addSharp" class="tab-icon"></ion-icon>
+      <ion-tab-button tab="Donasi" href="/donation-menu">
+        <ion-icon :icon="giftSharp" class="tab-icon"></ion-icon>
         <ion-label class="tab-label">Donasi</ion-label>
       </ion-tab-button>
 
@@ -54,7 +54,7 @@ import {
   heart,
   chatbubbles,
   person,
-  addSharp,
+  giftSharp,
 } from "ionicons/icons";
 </script>
 
