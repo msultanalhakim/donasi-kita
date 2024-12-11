@@ -15,66 +15,53 @@
           <h1 class="title">{{ donation.type }}</h1>
           <p class="subtitle">Isi data berikut untuk melakukan donasi</p>
 
-          <!-- Nama Donatur -->
+          <!-- Penerima Donasi -->
           <ion-item class="form-input">
             <ion-label position="stacked">Penerima Donasi</ion-label>
-            <ion-input
-              v-model="donationDetails.name"
-              placeholder="Penerima Donasi"
-              required
-            ></ion-input>
-          </ion-item>
-
-          <!-- Kategori Barang -->
-          <ion-item class="form-input">
-            <ion-label position="stacked">Email</ion-label>
-            <ion-input
-              v-model="donationDetails.email"
-              placeholder="Alamat Email"
-              type="email"
-              required
-            >
-            </ion-input>
-          </ion-item>
-
-          <!-- Jumlah Donasi -->
-          <ion-item class="form-input">
-            <ion-label position="stacked">Jumlah Donasi</ion-label>
-
-            <ion-input
-              v-model="donationDetails.amount"
-              placeholder="Masukkan jumlah donasi (Rp)"
-              type="number"
-              required
-            >
-            </ion-input>
-          </ion-item>
-
-          <!-- Metode Pembayaran -->
-          <ion-item class="form-input">
-            <ion-label position="stacked">Metode Pembayaran</ion-label>
             <ion-select
-              v-model="donationDetails.paymentMethod"
-              placeholder="Pilih Metode Pembayaran"
+              interface="popover"
+              v-model="donationDetails.penerima"
+              placeholder="Pilih Penerima Donasi"
             >
-              <ion-select-option value="bank_transfer"
-                >Transfer Bank</ion-select-option
+              <ion-select-option
+                v-for="target in donationTargets"
+                :key="target.id"
+                :value="target.name"
               >
-              <ion-select-option value="ewallet">E-Wallet</ion-select-option>
-              <ion-select-option value="credit_card"
-                >Kartu Kredit</ion-select-option
-              >
+                {{ target.name }}
+              </ion-select-option>
             </ion-select>
+          </ion-item>
+
+          <!-- Barang yang didonasikan -->
+          <ion-item class="form-input">
+            <ion-label position="stacked">Barang Donasi</ion-label>
+            <ion-textarea
+              v-model="donationDetails.barang"
+              placeholder="Barang yang didonasikan"
+              @ionInput="(e) => (donationDetails.barang = e.target.value)"
+              required
+            ></ion-textarea>
+          </ion-item>
+
+          <!-- Jumlah Barang -->
+          <ion-item class="form-input">
+            <ion-label position="stacked">Jumlah Barang</ion-label>
+            <ion-textarea
+              v-model="donationDetails.jumlah"
+              placeholder="Barang yang didonasikan"
+              @ionInput="(e) => (donationDetails.jumlah = e.target.value)"
+              required
+            ></ion-textarea>
           </ion-item>
 
           <!-- Pesan Opsional -->
           <ion-item class="form-input">
             <ion-label position="stacked">Pesan (Opsional)</ion-label>
             <ion-textarea
-              auto-grow="true"
-              v-model="donationDetails.message"
+              v-model="donationDetails.pesan"
               placeholder="Tulis pesan atau harapan Anda"
-              @ionInput="updateMessage"
+              @ionInput="(e) => (donationDetails.pesan = e.target.value)"
             />
           </ion-item>
 
@@ -104,9 +91,29 @@ import {
   bag,
   newspaper,
 } from "ionicons/icons";
+import { addDoc, collection, getDocs } from "firebase/firestore";
+import { dataBase } from "@/firebase";
+import { getAuth } from "firebase/auth";
+import { useAuth } from "@/auth"; // Mengimpor useAuth untuk cek status login
 
 // Ambil data dari router state
 const route = useRoute();
+
+// Data penerima donasi
+const donationTargets = ref([]); // Array untuk menampung data dari Firestore
+const fetchDonationTargets = async () => {
+  try {
+    const querySnapshot = await getDocs(
+      collection(dataBase, "donation-targets")
+    );
+    donationTargets.value = querySnapshot.docs.map((doc) => ({
+      id: doc.id, // ID unik dari dokumen Firestore
+      name: doc.data().name, // Nama penerima
+    }));
+  } catch (error) {
+    console.error("Error fetching donation targets:", error);
+  }
+};
 
 const donation = ref({
   type: route.query.type || "Kategori",
@@ -115,46 +122,60 @@ const donation = ref({
 
 // Data donasi
 const donationDetails = ref({
-  name: "",
-  email: "",
-  amount: null,
-  paymentMethod: "",
-  message: "",
+  penerima: "",
+  barang: "",
+  jumlah: "",
+  pesan: "",
 });
 
-const updateMessage = (event: any) => {
-  donationDetails.value.message = event.target.value;
-};
-
 // Fungsi untuk mengirim data donasi
-const submitDonation = () => {
+// Fungsi untuk kirim donasi
+const submitDonation = async () => {
   if (
-    !donationDetails.value.name ||
-    !donationDetails.value.email ||
-    !donationDetails.value.amount ||
-    !donationDetails.value.paymentMethod
+    !donationDetails.value.penerima ||
+    !donationDetails.value.barang ||
+    !donationDetails.value.jumlah
   ) {
-    alert("Harap isi semua bidang yang wajib.");
+    alert("Harap isi semua form.");
     return;
   }
 
-  // Simpan data ke database (misalnya Firestore)
+  if (!isAuthenticated()) {
+    alert("Anda harus login untuk melakukan donasi.");
+    return;
+  }
 
-  console.log("Data donasi:", donationDetails.value);
+  try {
+    if (currentUser.value) {
+      await addDoc(collection(dataBase, "donation"), {
+        penerima: donationDetails.value.penerima,
+        barang: donationDetails.value.barang,
+        jumlah: donationDetails.value.jumlah,
+        pesan: donationDetails.value.pesan || "", // Pesan opsional
+        pemberi: {
+          uid: currentUser.value.uid,
+          email: currentUser.value.email || "Tidak diketahui",
+          displayName: currentUser.value.displayName || "Anonim",
+        },
+        createdAt: new Date().toISOString(),
+      });
 
-  // Reset form setelah pengiriman
-  donationDetails.value = {
-    name: "",
-    email: "",
-    amount: null,
-    paymentMethod: "",
-    message: "",
-  };
-
-  alert("Terima kasih atas donasi Anda!");
+      alert("Donasi Anda berhasil dikirim!");
+      donationDetails.value = {
+        penerima: "",
+        barang: "",
+        jumlah: "",
+        pesan: "",
+      }; // Reset form setelah kirim
+    }
+  } catch (error) {
+    console.error("Gagal mengirim donasi:", error);
+    alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+  }
 };
-
 onMounted(() => {
+  console.log("donasi form", currentUser);
+  fetchDonationTargets(); // Ambil data saat komponen dimuat
   // Reset data berdasarkan parameter query
   donation.value = {
     type: route.query.type,
@@ -163,11 +184,10 @@ onMounted(() => {
 
   // Reset form input
   donationDetails.value = {
-    name: "",
-    email: "",
-    amount: null,
-    paymentMethod: "",
-    message: "",
+    penerima: "",
+    barang: "",
+    jumlah: "",
+    pesan: "",
   };
 });
 </script>
@@ -237,5 +257,25 @@ onMounted(() => {
 .category-icon {
   font-size: 2rem;
   color: #ffffff;
+}
+
+/* Menghapus efek fokus */
+ion-textarea {
+  --background: transparent; /* Latar belakang transparan */
+  --box-shadow: none; /* Menghapus bayangan */
+  --border-color: transparent; /* Hilangkan border */
+  --border-radius: 0; /* Samakan dengan ion-input */
+  --padding-start: 0; /* Sesuaikan padding */
+  --padding-end: 0;
+}
+
+/* Fokus dan aktif */
+ion-textarea:focus {
+  --background: #ffffff; /* Tetap sama saat fokus */
+  --box-shadow: none;
+  --border-color: #cccccc;
+}
+ion-content {
+  --padding-bottom: 0; /* Hilangkan padding bawah */
 }
 </style>
