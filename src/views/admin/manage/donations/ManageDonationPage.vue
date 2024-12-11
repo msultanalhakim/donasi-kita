@@ -15,7 +15,7 @@
         <div class="crud-container">
           <!-- Add Donation Button -->
           <div class="header-actions">
-            <ion-button expand="block" @click="() => router.push('/manage-donations/add')" color="success">
+            <ion-button expand="block" @click="() => router.push('/manage-donation/add')" color="success">
               <ion-icon slot="start" :icon="add"></ion-icon>
               Add New Donation
             </ion-button>
@@ -66,11 +66,6 @@
             </ion-list>
           </div>
   
-          <!-- No Data Message -->
-          <div v-else class="no-data">
-            <p>No donations available. Please add a new donation.</p>
-          </div>
-  
           <!-- Pagination -->
           <div class="pagination" v-if="totalPages > 1">
             <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
@@ -89,6 +84,7 @@
       </ion-content>
     </ion-page>
   </template>
+
   
   
   

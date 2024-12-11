@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/manage-donations"></ion-back-button>
+          <ion-back-button default-href="/manage-donation"></ion-back-button>
         </ion-buttons>
         <ion-title>Edit Donation</ion-title>
       </ion-toolbar>
@@ -195,11 +195,11 @@ const updateDonation = async () => {
     const toast = await toastController.create({
       message: 'Donation updated successfully!',
       duration: 2000,
-      color: 'success',
+      color: 'secondary',
       position: 'top',
     });
     toast.present();
-    router.push('/manage-donations');
+    router.push('/manage-donation');
   } catch (error) {
     console.error('Error updating donation:', error);
     const toast = await toastController.create({
