@@ -33,87 +33,96 @@
 
       <!-- Special Offers Section -->
       <div class="special-offers">
-          <!-- Section Header -->
-          <div class="special-header">
-            <h2>#SpecialForYou</h2>
-            <ion-button fill="clear" class="see-all-button">See All</ion-button>
-          </div>
-
-          <!-- Swiper Section -->
-          <swiper
-            :space-between="20"
-            :slides-per-view="1"
-            :centered-slides="true"
-            :loop="false"
-            class="special-swiper"
-            @slideChange="onSlideChange"
-          >
-            <swiper-slide
-              v-for="(offer, index) in offers"
-              :key="index"
-              class="offer-slide"
-            >
-              <ion-card class="offer-card">
-                <img :src="offer.image" alt="Offer Image" class="offer-image" />
-                <ion-card-header>
-                  <ion-card-title>{{ offer.title }}</ion-card-title>
-                </ion-card-header>
-                <ion-card-content>{{ offer.description }}</ion-card-content>
-              </ion-card>
-            </swiper-slide>
-          </swiper>
-
-          <!-- Navigation Indicators -->
-          <div class="swiper-navigation">
-            <span
-              v-for="(offer, index) in offers"
-              :key="'indicator-' + index"
-              class="swiper-dot"
-              :class="{ active: currentSlide === index }"
-              @click="goToSlide(index)"
-            ></span>
-          </div>
+        <!-- Section Header -->
+        <div class="special-header">
+          <h2>#SpecialForYou</h2>
+          <ion-button fill="clear" class="see-all-button">See All</ion-button>
         </div>
+
+        <!-- Swiper Section -->
+        <swiper
+          :space-between="20"
+          :slides-per-view="1"
+          :centered-slides="true"
+          :loop="false"
+          class="special-swiper"
+          @slideChange="onSlideChange"
+        >
+          <swiper-slide
+            v-for="(offer, index) in offers"
+            :key="index"
+            class="offer-slide"
+          >
+            <ion-card class="offer-card">
+              <img :src="offer.image" alt="Offer Image" class="offer-image" />
+              <ion-card-header>
+                <ion-card-title>{{ offer.title }}</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>{{ offer.description }}</ion-card-content>
+            </ion-card>
+          </swiper-slide>
+        </swiper>
+
+        <!-- Navigation Indicators -->
+        <div class="swiper-navigation">
+          <span
+            v-for="(offer, index) in offers"
+            :key="'indicator-' + index"
+            class="swiper-dot"
+            :class="{ active: currentSlide === index }"
+            @click="goToSlide(index)"
+          ></span>
+        </div>
+      </div>
 
       <!-- Category Section -->
-        <div class="category-section">
-          <div class="category-header">
-            <h2>Explore Categories</h2>
-            <ion-button fill="clear" class="see-all-button">See All</ion-button>
-          </div>
-          <div class="category-grid">
-            <div
-              v-for="(category, index) in categories"
-              :key="index"
-              class="category-card"
-            >
-              <div class="icon-container">
-                <ion-icon :icon="category.icon" class="category-icon"></ion-icon>
-              </div>
-              <span class="category-name">{{ category.name }}</span>
+      <div class="category-section">
+        <div class="category-header">
+          <h2>Explore Categories</h2>
+          <ion-button
+            fill="clear"
+            class="see-all-button"
+            @click="router.push('/donation-menu')"
+            >See All</ion-button
+          >
+        </div>
+        <div class="category-grid">
+          <div
+            v-for="(category, index) in categories"
+            :key="index"
+            class="category-card"
+          >
+            <div class="icon-container">
+              <ion-icon :icon="category.icon" class="category-icon"></ion-icon>
             </div>
+            <span class="category-name">{{ category.name }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- How It Works Section -->
-        <div class="how-it-works">
-          <h2>How It Works</h2>
-          <div class="steps-container">
-            <div class="step">
-              <ion-icon :icon="notifications" class="step-icon"></ion-icon>
-              <p>Select the item you wish to donate from your collection.</p>
-            </div>
-            <div class="step">
-              <ion-icon :icon="location" class="step-icon"></ion-icon>
-              <p>Choose a time for the pickup or drop-off at a nearby location.</p>
-            </div>
-            <div class="step">
-              <ion-icon :icon="cube" class="step-icon"></ion-icon>
-              <p>Your items are delivered to those in need, creating a real impact!</p>
-            </div>
+      <!-- How It Works Section -->
+      <div class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+          <div class="step">
+            <ion-icon :icon="notifications" class="step-icon"></ion-icon>
+            <p>Select the item you wish to donate from your collection.</p>
+          </div>
+          <div class="step">
+            <ion-icon :icon="location" class="step-icon"></ion-icon>
+            <p>
+              Choose a time for the pickup or drop-off at a nearby location.
+            </p>
+          </div>
+          <div class="step">
+            <ion-icon :icon="cube" class="step-icon"></ion-icon>
+            <p>
+              Your items are delivered to those in need, creating a real impact!
+            </p>
           </div>
         </div>
-      </ion-content>
+      </div>
+    </ion-content>
   </ion-page>
 </template>
 
@@ -138,18 +147,35 @@ import {
   gameController,
   phonePortrait,
   shirt,
-  logoFacebook, 
-  logoInstagram, 
+  logoFacebook,
+  logoInstagram,
   logoTwitter,
-  cubeOutline
+  cubeOutline,
 } from "ionicons/icons";
+import router from "@/router";
 
 // Mock data for offers
 const offers = [
-  { title: "Limited Time Offer", description: "Get up to 50% off on cleaning services.", image: "/assets/images/login-illustration.png" },
-  { title: "Repair Discount", description: "Save 30% on repairing services for a week.", image: "/assets/images/login-illustration.png" },
-  { title: "Exclusive Package", description: "Avail a combo offer for your home services!", image: "/assets/images/login-illustration.png" },
-  { title: "Free Service Day", description: "Enjoy free services on our special day!", image: "/assets/images/login-illustration.png" },
+  {
+    title: "Limited Time Offer",
+    description: "Get up to 50% off on cleaning services.",
+    image: "/assets/images/login-illustration.png",
+  },
+  {
+    title: "Repair Discount",
+    description: "Save 30% on repairing services for a week.",
+    image: "/assets/images/login-illustration.png",
+  },
+  {
+    title: "Exclusive Package",
+    description: "Avail a combo offer for your home services!",
+    image: "/assets/images/login-illustration.png",
+  },
+  {
+    title: "Free Service Day",
+    description: "Enjoy free services on our special day!",
+    image: "/assets/images/login-illustration.png",
+  },
 ];
 
 // Mock data for categories
@@ -171,7 +197,9 @@ const onSlideChange = (swiper: any) => {
 };
 
 const goToSlide = (index: number) => {
-  const swiperInstance = (document.querySelector(".special-swiper") as HTMLElement & { swiper: any })?.swiper;
+  const swiperInstance = (
+    document.querySelector(".special-swiper") as HTMLElement & { swiper: any }
+  )?.swiper;
   swiperInstance?.slideToLoop(index);
 };
 
@@ -180,13 +208,15 @@ const disasterNews = ref([
   {
     title: "Donate Clothes to the Needy",
     image: "/assets/images/login-illustration.png",
-    description: "Clothing donations are needed urgently in the local community."
+    description:
+      "Clothing donations are needed urgently in the local community.",
   },
   {
     title: "Donate Electronics to Empower",
     image: "/assets/images/login-illustration.png",
-    description: "Your old electronics can change lives by providing access to technology."
-  }
+    description:
+      "Your old electronics can change lives by providing access to technology.",
+  },
 ]);
 
 // Mock data for success stories
@@ -194,17 +224,17 @@ const successStories = ref([
   {
     title: "The Impact of Donated Clothes",
     image: "/assets/images/login-illustration.png",
-    testimonial: "Thanks to your generous clothing donations, many families have been able to stay warm this winter."
+    testimonial:
+      "Thanks to your generous clothing donations, many families have been able to stay warm this winter.",
   },
   {
     title: "A New Life Through Electronics",
     image: "/assets/images/login-illustration.png",
-    testimonial: "Donating your old devices helped students excel in their online classes during the pandemic."
-  }
+    testimonial:
+      "Donating your old devices helped students excel in their online classes during the pandemic.",
+  },
 ]);
-
 </script>
-
 
 <style scoped>
 /* General styling */
@@ -227,7 +257,7 @@ ion-content {
 /* General Container */
 .header-container {
   padding: 26px 22px;
-  background: linear-gradient(135deg, #85A98F, #5A6C57);
+  background: linear-gradient(135deg, #85a98f, #5a6c57);
   border-bottom-left-radius: 30px;
   border-bottom-right-radius: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -326,13 +356,13 @@ ion-content {
 
 .see-all-button {
   font-size: 14px;
-  color: #85A98F;
-  --ion-color-primary: #85A98F;
+  color: #85a98f;
+  --ion-color-primary: #85a98f;
 }
 
 /* Swiper Section */
 .special-swiper {
-  margin-top: -10px
+  margin-top: -10px;
 }
 
 .offer-slide {
@@ -384,7 +414,7 @@ ion-card-content {
 }
 
 .swiper-dot.active {
-  background-color: #85A98F;
+  background-color: #85a98f;
 }
 
 /* Category Section */
@@ -436,7 +466,7 @@ ion-card-content {
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #85A98F, #5A6C57);
+  background: linear-gradient(135deg, #85a98f, #5a6c57);
   border-radius: 50%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -475,7 +505,7 @@ ion-card-content {
 
 .step-icon {
   font-size: 45px;
-  color: #85A98F;
+  color: #85a98f;
 }
 
 .step p {
