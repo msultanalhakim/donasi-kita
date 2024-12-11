@@ -191,10 +191,12 @@ async function registerUser() {
       uid: user.uid,
       name: fullName.value,
       email: user.email,
+      password: password.value,
       role: "user",
       createdAt: new Date(),
     });
 
+    //agar tetap masih logout
     await logout();
 
     alert("Registration successful!");

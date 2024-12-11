@@ -24,15 +24,19 @@ const showTabs = computed(() => {
 // Akses authStore
 const authStore = useAuthStore();
 
-onMounted(() => {
-  authStore.initialize();
+// Cek apakah pengguna terautentikasi
+const isAuthenticated = computed(() => authStore.isAuthenticated());
 
+// Ambil user data dari store
+const currentUser = computed(() => authStore.currentUser);
+
+onMounted(() => {
   // Memantau perubahan status login di console
   authStore.$subscribe(() => {
     if (authStore.isAuthenticated()) {
-      console.log("User logged in:", authStore.currentUser);
+      console.log("Current User:", authStore.currentUser);
     } else {
-      console.log("User logged out");
+      console.log("User logged out", authStore.currentUser);
     }
   });
 });

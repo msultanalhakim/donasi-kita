@@ -1,7 +1,9 @@
 import { defineStore } from "pinia";
 import { login, logout, loginWithGoogle } from "@/auth";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/firebase";
+import { auth, dataBase } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -10,40 +12,40 @@ export const useAuthStore = defineStore("auth", {
   }),
   actions: {
     // Cek status pengguna saat aplikasi pertama kali dimuat
-    async initialize() {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          this.currentUser = user;
-          // Simpan ke localStorage
-          localStorage.setItem("user", JSON.stringify(user));
-        } else {
-          this.currentUser = null;
-          // Hapus user dari localStorage jika logout
-          localStorage.removeItem("user");
-        }
-      });
-    },
 
     // Login
     async login(email: string, password: string) {
       try {
-        this.currentUser = await login(email, password);
+        // Melakukan login dengan email dan password
+        const user = await login(email, password);
         this.errorMessage = "";
-        // Simpan ke localStorage
-        localStorage.setItem("user", JSON.stringify(this.currentUser));
+
+        // Mengambil role dari Firestore
+        const userDocRef = doc(dataBase, "users", user.uid);
+        const docSnap = await getDoc(userDocRef);
+
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          this.currentUser = { ...user, role: userData.role }; // Menambahkan role ke currentUser
+
+          // Simpan currentUser dengan role ke localStorage
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+        } else {
+          console.log("No user document found in Firestore");
+        }
       } catch (error: any) {
         console.error("Error during login:", error);
         this.errorMessage = error.message || "Login failed.";
       }
     },
-
     // Logout
+
+    // Pada fungsi logout
     async logout() {
       try {
-        await logout();
+        await signOut(auth); // Pastikan logout Firebase Auth juga dilakukan
         this.currentUser = null;
         this.errorMessage = "";
-        // Hapus user dari localStorage
         localStorage.removeItem("user");
       } catch (error: any) {
         console.error("Error during logout:", error);
@@ -52,21 +54,58 @@ export const useAuthStore = defineStore("auth", {
     },
 
     // Login dengan Google
+    // Login dengan Google
     async loginWithGoogle() {
       try {
-        this.currentUser = await loginWithGoogle();
+        const user = await loginWithGoogle(); // Menggunakan fungsi loginWithGoogle
+        // Mengambil role dari Firestore
+        const userDocRef = doc(dataBase, "users", user.uid);
+        const docSnap = await getDoc(userDocRef);
+
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          this.currentUser = { ...user, role: userData.role }; // Menambahkan role ke currentUser
+
+          // Simpan currentUser dengan role ke localStorage
+          localStorage.setItem("user", JSON.stringify(this.currentUser));
+        } else {
+          console.log("No user document found in Firestore");
+        }
         this.errorMessage = "";
-        // Simpan ke localStorage
-        localStorage.setItem("user", JSON.stringify(this.currentUser));
       } catch (error: any) {
         console.error("Error during Google login:", error);
         this.errorMessage = error.message || "Google login failed.";
       }
     },
-
     // Validasi apakah pengguna sudah login
     isAuthenticated() {
       return !!this.currentUser;
+    },
+
+    // Load currentUser dari localStorage saat aplikasi dimulai
+    loadUserFromLocalStorage() {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        this.currentUser = JSON.parse(storedUser);
+
+        // Ambil data user berdasarkan email dari Firestore untuk mendapatkan role
+        const userDocRef = doc(dataBase, "users", this.currentUser.uid); // Menggunakan UID yang sudah ada di localStorage
+        getDoc(userDocRef)
+          .then((docSnap) => {
+            if (docSnap.exists()) {
+              const userData = docSnap.data();
+              // Menambahkan properti 'role' dari Firestore ke currentUser
+              this.currentUser.role = userData.role;
+            } else {
+              console.log("No user document found in Firestore");
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching user data from Firestore:", error);
+          });
+      } else {
+        console.log("No user found in localStorage");
+      }
     },
   },
 });
