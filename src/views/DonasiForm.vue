@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import {
   shirt,
   phonePortrait,
@@ -94,11 +94,14 @@ import {
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import { dataBase } from "@/firebase";
 import { getAuth } from "firebase/auth";
-import { useAuth } from "@/auth"; // Mengimpor useAuth untuk cek status login
+import { useAuthStore } from "@/authStore";
 
+const authStore = useAuthStore();
+
+const user = ref();
 // Ambil data dari router state
 const route = useRoute();
-
+const router = useRouter();
 // Data penerima donasi
 const donationTargets = ref([]); // Array untuk menampung data dari Firestore
 const fetchDonationTargets = async () => {
@@ -110,6 +113,7 @@ const fetchDonationTargets = async () => {
       id: doc.id, // ID unik dari dokumen Firestore
       name: doc.data().name, // Nama penerima
     }));
+    console.log(donationTargets.value);
   } catch (error) {
     console.error("Error fetching donation targets:", error);
   }
@@ -140,27 +144,25 @@ const submitDonation = async () => {
     return;
   }
 
-  if (!isAuthenticated()) {
-    alert("Anda harus login untuk melakukan donasi.");
-    return;
-  }
-
   try {
-    if (currentUser.value) {
-      await addDoc(collection(dataBase, "donation"), {
+    if (user.value) {
+      await addDoc(collection(dataBase, "donations"), {
+        pemberi: user.value.name,
+        email: user.value.email,
         penerima: donationDetails.value.penerima,
         barang: donationDetails.value.barang,
         jumlah: donationDetails.value.jumlah,
         pesan: donationDetails.value.pesan || "", // Pesan opsional
-        pemberi: {
-          uid: currentUser.value.uid,
-          email: currentUser.value.email || "Tidak diketahui",
-          displayName: currentUser.value.displayName || "Anonim",
-        },
+        // pemberi: {
+        //   uid: user.value.uid,
+        //   email: user.value.email || "Tidak diketahui",
+        //   displayName: user.value.displayName || "Anonim",
+        // },
         createdAt: new Date().toISOString(),
       });
 
       alert("Donasi Anda berhasil dikirim!");
+      router.push("/home");
       donationDetails.value = {
         penerima: "",
         barang: "",
@@ -173,9 +175,11 @@ const submitDonation = async () => {
     alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
   }
 };
-onMounted(() => {
-  console.log("donasi form", currentUser);
-  fetchDonationTargets(); // Ambil data saat komponen dimuat
+onMounted(async () => {
+  authStore.loadUserFromLocalStorage();
+  user.value = authStore.currentUser;
+
+  await fetchDonationTargets(); // Ambil data saat komponen dimuat
   // Reset data berdasarkan parameter query
   donation.value = {
     type: route.query.type,

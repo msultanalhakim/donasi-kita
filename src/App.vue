@@ -24,20 +24,8 @@ const showTabs = computed(() => {
 // Akses authStore
 const authStore = useAuthStore();
 
-// Cek apakah pengguna terautentikasi
-const isAuthenticated = computed(() => authStore.isAuthenticated());
-
-// Ambil user data dari store
-const currentUser = computed(() => authStore.currentUser);
-
 onMounted(() => {
-  // Memantau perubahan status login di console
-  authStore.$subscribe(() => {
-    if (authStore.isAuthenticated()) {
-      console.log("Current User:", authStore.currentUser);
-    } else {
-      console.log("User logged out", authStore.currentUser);
-    }
-  });
+  // Mulai listener untuk memantau perubahan status login/logout
+  authStore.initializeAuthListener();
 });
 </script>

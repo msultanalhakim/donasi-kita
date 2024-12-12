@@ -96,6 +96,7 @@ import { useAuthStore } from "@/authStore";
 const router = useRouter();
 
 const authStore = useAuthStore(); // Mengakses authStore
+
 const handleLogout = async () => {
   await authStore.logout(); // Memanggil fungsi logout dari authStore.ts
   router.push("/login"); // Arahkan ke halaman login setelah logout

@@ -12,6 +12,33 @@ export const useAuthStore = defineStore("auth", {
   }),
   actions: {
     // Cek status pengguna saat aplikasi pertama kali dimuat
+    async initializeAuthListener() {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          console.log("User logged in:", user);
+
+          // Ambil role dari Firestore
+          // const userDocRef = doc(dataBase, "users", user.uid);
+          // const docSnap = await getDoc(userDocRef);
+
+          // if (docSnap.exists()) {
+          //   const userData = docSnap.data();
+          //   this.currentUser = { ...user, role: userData.role };
+
+          //   console.log("Current user with role:", this.currentUser); // Log untuk cek role
+
+          //   // Simpan currentUser dengan role ke localStorage
+          //   localStorage.setItem("user", JSON.stringify(this.currentUser));
+          // } else {
+          //   console.log("No user document found in Firestore");
+          // }
+        } else {
+          console.log("User logged out");
+          this.currentUser = null;
+          localStorage.removeItem("user");
+        }
+      });
+    },
 
     // Login
     async login(email: string, password: string) {
@@ -96,6 +123,7 @@ export const useAuthStore = defineStore("auth", {
               const userData = docSnap.data();
               // Menambahkan properti 'role' dari Firestore ke currentUser
               this.currentUser.role = userData.role;
+              this.currentUser.name = userData.name;
             } else {
               console.log("No user document found in Firestore");
             }
