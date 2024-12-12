@@ -40,6 +40,16 @@
                 ></ion-input>
               </ion-item>
 
+              <!-- Image Link Field -->
+              <ion-item class="input-item">
+                <ion-label position="stacked">Image URL (Optional)</ion-label>
+                <ion-input
+                  type="text"
+                  v-model="form.imageLink"
+                  placeholder="Enter image URL"
+                ></ion-input>
+              </ion-item>
+
               <!-- Submit Button -->
               <ion-button
                 expand="block"
@@ -81,6 +91,7 @@ import { toastController } from '@ionic/vue'; // Import toastController
 const form = ref({
   name: '',
   description: '',
+  imageLink: '', // Add imageLink field
 });
 
 const router = useRouter();
@@ -105,7 +116,7 @@ const fetchDonationTargetData = async (targetId) => {
 
     if (targetDocSnap.exists()) {
       const targetData = targetDocSnap.data();
-      form.value = { ...targetData }; // Assuming target data contains name and description
+      form.value = { ...targetData }; // Assuming target data contains name, description, and imageLink
     } else {
       console.error("No such target found!");
     }
@@ -124,6 +135,7 @@ const submitForm = async () => {
     await updateDoc(targetDocRef, {
       name: form.value.name,
       description: form.value.description,
+      imageLink: form.value.imageLink || '', // Update the image link if provided
     });
 
     // Fetch the updated data to refresh the form
@@ -163,6 +175,7 @@ const resetForm = () => {
   form.value = {
     name: '',
     description: '',
+    imageLink: '', // Reset the image link field
   };
 };
 </script>

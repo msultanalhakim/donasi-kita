@@ -17,6 +17,7 @@
           </ion-card-header>
 
           <ion-card-content>
+            <!-- Target Name Input -->
             <ion-item>
               <ion-label position="stacked">Target Name</ion-label>
               <ion-input
@@ -26,6 +27,7 @@
               ></ion-input>
             </ion-item>
 
+            <!-- Description Input -->
             <ion-item>
               <ion-label position="stacked">Description</ion-label>
               <ion-textarea
@@ -34,6 +36,16 @@
               ></ion-textarea>
             </ion-item>
 
+            <!-- Image URL Input -->
+            <ion-item>
+              <ion-label position="stacked">Image URL (Optional)</ion-label>
+              <ion-input
+                v-model="imageLink"
+                placeholder="Enter image URL"
+              ></ion-input>
+            </ion-item>
+
+            <!-- Buttons -->
             <div class="button-group">
               <ion-button expand="block" color="primary" @click="addTarget">
                 Add Target
@@ -62,6 +74,7 @@ const router = useRouter();
 // Form Data
 const targetName = ref('');
 const description = ref('');
+const imageLink = ref(''); // New field for image URL
 
 // Function to Add Target
 const addTarget = async () => {
@@ -74,6 +87,7 @@ const addTarget = async () => {
     await addDoc(collection(dataBase, 'donation-targets'), {
       name: targetName.value,
       description: description.value || 'No description provided',
+      imageLink: imageLink.value || '', // Save the image link if provided
     });
 
     // Show success toast notification

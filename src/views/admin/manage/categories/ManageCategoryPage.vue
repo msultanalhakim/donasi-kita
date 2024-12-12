@@ -1,72 +1,74 @@
 <template>
   <ion-page>
+    <!-- Header -->
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="end">
+        <ion-buttons slot="start">
           <ion-button @click="() => router.push('/dashboard')" color="light">
             <ion-icon slot="icon-only" :icon="home"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Manage Categories</ion-title>
       </ion-toolbar>
-    </ion-header>
 
-    <ion-content fullscreen>
-      <div class="crud-container">
-        <!-- Add Category Button -->
-        <div class="header-actions">
-          <ion-button expand="block" @click="() => router.push('/manage-category/add')" color="success">
+      <!-- Sub-header for Categories List -->
+      <ion-toolbar color="light">
+        <ion-title size="small">Categories List Overview</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="() => router.push('/manage-category/add')" color="success">
             <ion-icon slot="start" :icon="add"></ion-icon>
             Add New Category
           </ion-button>
-        </div>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-        <!-- Search and Filter Section -->
+    <!-- Content -->
+    <ion-content fullscreen>
+      <div class="crud-container">
+        <!-- Search Section -->
         <div class="search-filter-container">
           <ion-searchbar
             v-model="searchQuery"
             debounce="500"
             placeholder="Search categories..."
+            show-clear-button="focus"
           ></ion-searchbar>
         </div>
 
-        <!-- Categories Table -->
+        <!-- Categories List -->
         <div class="table-container">
           <ion-list>
-            <!-- Table Header -->
-            <ion-item class="table-header">
-              <ion-label class="table-column">Category Name</ion-label>
-              <ion-label class="table-column">Description</ion-label>
-              <ion-label class="table-column">Actions</ion-label>
-            </ion-item>
-
-            <!-- Table Rows -->
             <ion-item v-for="category in paginatedCategories" :key="category.id" lines="inset">
               <ion-label>
-                <h2>{{ category.name }}</h2>
-                <p><strong>description : </strong>{{ category.description }}</p>
+                <div class="category-card">
+                  <h2>{{ category.name }}</h2>
+                  <div class="category-info">
+                    <p><strong>Description:</strong> {{ category.description }}</p>
+                  </div>
+                  <ion-buttons slot="end" class="button-group">
+                    <ion-button color="primary" fill="outline" @click="editCategory(category)">
+                      <ion-icon slot="icon-only" :icon="create" style="font-size: 18px;"></ion-icon>
+                    </ion-button>
+                    <ion-button color="danger" fill="outline" @click="deleteCategory(category.id)">
+                      <ion-icon slot="icon-only" :icon="trash" style="font-size: 18px;"></ion-icon>
+                    </ion-button>
+                  </ion-buttons>
+                </div>
               </ion-label>
-              <ion-buttons slot="end">
-                <ion-button color="primary" fill="outline" @click="editCategory(category)">
-                  <ion-icon slot="icon-only" :icon="create"></ion-icon>
-                </ion-button>
-                <ion-button color="danger" fill="outline" @click="deleteCategory(category.id)">
-                  <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-                </ion-button>
-              </ion-buttons>
             </ion-item>
           </ion-list>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-          <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+          <ion-button :disabled="currentPage === 1" @click="previousPage" class="custom-pagination-button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
               <path d="M15 18l-6-6 6-6"></path>
             </svg>
           </ion-button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+          <ion-button :disabled="currentPage === totalPages" @click="nextPage" class="custom-pagination-button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
               <path d="M9 18l6-6-6-6"></path>
             </svg>
@@ -76,6 +78,8 @@
     </ion-content>
   </ion-page>
 </template>
+
+
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
@@ -166,6 +170,7 @@ const editCategory = (category: Category) => {
   router.push({ name: 'ManageCategoryEdit', params: { categoriesId: category.id } });
 };
 
+// Delete Category
 const deleteCategory = async (categoriesId: string) => {
   const alert = await alertController.create({
     header: 'Confirm Delete',
@@ -185,12 +190,11 @@ const deleteCategory = async (categoriesId: string) => {
           try {
             await deleteDoc(categoryRef);
             console.log('Category deleted successfully!');
-            
-            // Show success toast notification
+
             const toast = await toastController.create({
               message: 'Category deleted successfully!',
               duration: 2000,
-              color: 'danger', // Use danger color for delete actions
+              color: 'danger',
               position: 'top',
             });
             toast.present();
@@ -199,11 +203,10 @@ const deleteCategory = async (categoriesId: string) => {
           } catch (error) {
             console.error('Error deleting category:', error);
 
-            // Show error toast notification
             const toast = await toastController.create({
               message: 'Failed to delete category.',
               duration: 2000,
-              color: 'danger', // Red color for error
+              color: 'danger',
               position: 'top',
             });
             toast.present();
@@ -214,10 +217,9 @@ const deleteCategory = async (categoriesId: string) => {
   });
   await alert.present();
 };
-
 </script>
-<style scoped>
 
+<style scoped>
 ion-content {
   --background: #f4f7fa;
   font-family: 'Arial', sans-serif;
@@ -237,36 +239,31 @@ ion-content {
 }
 
 .table-container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-}
-
-.table-header {
-  font-weight: bold;
-  background-color: #f0f0f0;
-  border-radius: 8px;
   padding: 10px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-ion-item {
-  --background-hover: #f7f7f7;
-  border-radius: 10px;
-  margin-bottom: 12px;
+.category-card {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
 }
 
-ion-item h2 {
-  font-size: 18px;
+.category-card h2 {
+  font-size: 16px;
   font-weight: bold;
-  margin: 0;
   color: #333;
+  margin: 0;
 }
 
-ion-item p {
-  margin: 4px 0;
+.category-info p {
+  font-size: 12px;
   color: #555;
-  font-size: 14px;
+  margin: 5px 0;
 }
 
 ion-buttons ion-button {
@@ -279,7 +276,6 @@ ion-buttons ion-button {
 }
 
 .pagination span {
-  margin: 0 15px;
   font-size: 14px;
   color: #333;
 }
@@ -290,7 +286,6 @@ ion-button {
 
 ion-button[fill="outline"] {
   --border-color: #ccc;
-  --border-width: 1px;
   --color: #333;
 }
 
@@ -312,9 +307,8 @@ ion-button[color="danger"] {
   --background: #dc3545;
   --color: white;
 }
-
-ion-button[color="tertiary"] {
-  --background: #f0f0f0;
-  --color: #007bff;
+.button-group {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

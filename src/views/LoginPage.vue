@@ -172,7 +172,6 @@ const loginWithGoogle = async () => {
     await router.push("/beranda"); // Redirect ke halaman beranda setelah sukses login
   } catch (error) {
     console.error("Google registration error:", error);
-    alert(`Error during Google registration: ${error.message}`);
   }
 };
 </script>

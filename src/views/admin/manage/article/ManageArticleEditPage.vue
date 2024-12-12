@@ -39,6 +39,16 @@
                   ></ion-input>
                 </ion-item>
   
+                <!-- Image Link Field -->
+                <ion-item class="input-item">
+                  <ion-label position="stacked">Image URL</ion-label>
+                  <ion-input
+                    v-model="form.imageLink"
+                    placeholder="Enter article image URL (optional)"
+                    type="url"
+                  ></ion-input>
+                </ion-item>
+  
                 <!-- Submit Button -->
                 <ion-button
                   expand="block"
@@ -68,139 +78,140 @@
       </ion-content>
     </ion-page>
   </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRoute, useRouter } from 'vue-router';
-  import { dataBase } from '@/firebase';
-  import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'; // Tambahkan serverTimestamp
-  import { toastController } from '@ionic/vue'; // Import toastController
-  
-  // The form data model
-  const form = ref({
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { dataBase } from '@/firebase';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'; // Tambahkan serverTimestamp
+import { toastController } from '@ionic/vue'; // Import toastController
+
+// The form data model
+const form = ref({
+  title: '',
+  description: '',
+  imageLink: '', // New field for image link
+});
+
+const router = useRouter();
+const route = useRoute();
+const isSubmitting = ref(false);
+
+// Get the articleId from the route parameters
+const articleId = route.params.articleId;
+
+// Fetch the article data when the component is mounted
+onMounted(async () => {
+  if (articleId) {
+    await fetchArticleData(articleId);
+  }
+});
+
+// Function to fetch article data from Firestore
+const fetchArticleData = async (articleId) => {
+  try {
+    const articleDocRef = doc(dataBase, "articles", articleId); // Assuming the collection is 'articles'
+    const articleDocSnap = await getDoc(articleDocRef);
+
+    if (articleDocSnap.exists()) {
+      const articleData = articleDocSnap.data();
+      form.value = { ...articleData }; // Assuming article data contains title, content, and imageLink
+    } else {
+      console.error("No such article found!");
+    }
+  } catch (error) {
+    console.error('Error fetching article data:', error);
+  }
+};
+
+// Function to submit the form and update article data in Firestore
+const submitForm = async () => {
+  isSubmitting.value = true;
+  try {
+    const articleDocRef = doc(dataBase, "articles", articleId); // Assuming the collection is 'articles'
+
+    // Update the document in Firestore with imageLink
+    await updateDoc(articleDocRef, {
+      title: form.value.title,
+      description: form.value.description,
+      imageLink: form.value.imageLink || '', // Include imageLink
+      updatedAt: serverTimestamp(), // Tambahkan properti updatedAt
+    });
+
+    // Show success toast notification
+    const toast = await toastController.create({
+      message: 'Article updated successfully!',
+      duration: 2000,
+      color: 'secondary', // Green color for success
+      position: 'top',
+    });
+    toast.present();
+
+    // Fetch the updated data to refresh the form
+    await fetchArticleData(articleId);
+
+    // Redirect to Manage Articles
+    router.push('/manage-article').then(() => {
+      window.dispatchEvent(new CustomEvent('data-updated')); // Emit event here
+    });
+  } catch (error) {
+    console.error('Error updating article data:', error);
+    alert('Failed to update article. Please try again.');
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+// Function to reset the form
+const resetForm = () => {
+  form.value = {
     title: '',
     description: '',
-  });
-  
-  const router = useRouter();
-  const route = useRoute();
-  const isSubmitting = ref(false);
-  
-  // Get the articleId from the route parameters
-  const articleId = route.params.articleId;
-  
-  // Fetch the article data when the component is mounted
-  onMounted(async () => {
-    if (articleId) {
-      await fetchArticleData(articleId);
-    }
-  });
-  
-  // Function to fetch article data from Firestore
-  const fetchArticleData = async (articleId) => {
-    try {
-      const articleDocRef = doc(dataBase, "articles", articleId); // Assuming the collection is 'articles'
-      const articleDocSnap = await getDoc(articleDocRef);
-  
-      if (articleDocSnap.exists()) {
-        const articleData = articleDocSnap.data();
-        form.value = { ...articleData }; // Assuming article data contains title and content
-      } else {
-        console.error("No such article found!");
-      }
-    } catch (error) {
-      console.error('Error fetching article data:', error);
-    }
+    imageLink: '', // Reset the imageLink field
   };
-  
-  // Function to submit the form and update article data in Firestore
-  const submitForm = async () => {
-    isSubmitting.value = true;
-    try {
-      const articleDocRef = doc(dataBase, "articles", articleId); // Assuming the collection is 'articles'
-  
-      // Update the document in Firestore
-      await updateDoc(articleDocRef, {
-        title: form.value.title,
-        description: form.value.description,
-        updatedAt: serverTimestamp(), // Tambahkan properti updatedAt
-      });
-  
-      // Show success toast notification
-      const toast = await toastController.create({
-        message: 'Article updated successfully!',
-        duration: 2000,
-        color: 'secondary ', // Green color for success
-        position: 'top',
-      });
-      toast.present();
-  
-      // Fetch the updated data to refresh the form
-      await fetchArticleData(articleId);
-  
-      // Redirect to Manage Articles
-      router.push('/manage-article').then(() => {
-        window.dispatchEvent(new CustomEvent('data-updated')); // Emit event here
-      });
-    } catch (error) {
-      console.error('Error updating article data:', error);
-      alert('Failed to update article. Please try again.');
-    } finally {
-      isSubmitting.value = false;
-    }
-  };
-  
-  // Function to reset the form
-  const resetForm = () => {
-    form.value = {
-      title: '',
-      description: '',
-    };
-  };
-  </script>
-  
-  <style scoped>
-  ion-content {
-    --background: #f7f9fc;
-  }
-  
-  .form-container {
-    padding: 20px;
-  }
-  
-  ion-card {
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background: linear-gradient(145deg, #ffffff, #f0f0f0);
-  }
-  
-  ion-card-title {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .input-item {
-    margin-top: 15px;
-    --highlight-color-focused: #2196f3;
-    --placeholder-color: #aaa;
-    --placeholder-font-style: italic;
-  }
-  
-  .submit-button {
-    margin-top: 20px;
-    --background: #2196f3;
-    --background-hover: #1e88e5;
-    --box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
-    font-weight: bold;
-  }
-  
-  .reset-button {
-    margin-top: 10px;
-    --background: #e0e0e0;
-    --background-hover: #d6d6d6;
-    --color: #555;
-  }
-  </style>
+};
+</script>
+<style scoped>
+ion-content {
+  --background: #f7f9fc;
+}
+
+.form-container {
+  padding: 20px;
+}
+
+ion-card {
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+}
+
+ion-card-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+}
+
+.input-item {
+  margin-top: 15px;
+  --highlight-color-focused: #2196f3;
+  --placeholder-color: #aaa;
+  --placeholder-font-style: italic;
+}
+
+.submit-button {
+  margin-top: 20px;
+  --background: #2196f3;
+  --background-hover: #1e88e5;
+  --box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+  font-weight: bold;
+}
+
+.reset-button {
+  margin-top: 10px;
+  --background: #e0e0e0;
+  --background-hover: #d6d6d6;
+  --color: #555;
+}
+</style>
   
