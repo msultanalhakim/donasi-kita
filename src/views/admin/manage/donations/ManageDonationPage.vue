@@ -1,80 +1,78 @@
 <template>
     <ion-page>
+      <!-- Header -->
       <ion-header>
         <ion-toolbar color="primary">
-          <ion-buttons slot="end">
-            <ion-button @click="() => router.push('/dashboard')" color="light">
+          <ion-buttons slot="start">
+            <ion-button @click="navigateToDashboard" color="light">
               <ion-icon slot="icon-only" :icon="home"></ion-icon>
             </ion-button>
           </ion-buttons>
           <ion-title>Manage Donations</ion-title>
         </ion-toolbar>
+  
+        <!-- Sub-header for Donations List -->
+        <ion-toolbar color="light">
+          <ion-title size="small">Donations List Overview</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="navigateToAddDonation" color="success">
+              <ion-icon slot="start" :icon="add"></ion-icon>
+              Add Donation
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
       </ion-header>
   
+      <!-- Content -->
       <ion-content fullscreen>
         <div class="crud-container">
-          <!-- Add Donation Button -->
-          <div class="header-actions">
-            <ion-button expand="block" @click="() => router.push('/manage-donation/add')" color="success">
-              <ion-icon slot="start" :icon="add"></ion-icon>
-              Add New Donation
-            </ion-button>
-          </div>
-  
           <!-- Search Section -->
           <div class="search-filter-container">
             <ion-searchbar
               v-model="searchQuery"
               debounce="500"
               placeholder="Search donations..."
+              show-clear-button="focus"
             ></ion-searchbar>
           </div>
   
-          <!-- Donations Table -->
-          <div class="table-container" v-if="donations.length > 0">
+          <!-- Donation List -->
+          <div class="table-container">
             <ion-list>
-              <!-- Table Header -->
-              <ion-item class="table-header">
-                <ion-label class="table-column">Item Name</ion-label>
-                <ion-label class="table-column">Quantity</ion-label>
-                <ion-label class="table-column">Category</ion-label>
-                <ion-label class="table-column">Delivery Type</ion-label>
-                <ion-label class="table-column">Target</ion-label>
-                <ion-label class="table-column">User Email</ion-label>
-                <ion-label class="table-column">Actions</ion-label>
-              </ion-item>
-  
-              <!-- Table Rows -->
               <ion-item v-for="donation in paginatedDonations" :key="donation.id" lines="inset">
                 <ion-label>
-                  <h2>{{ donation.itemName }}</h2>
-                  <p><strong>Quantity:</strong> {{ donation.quantity }}</p>
-                  <p><strong>Category:</strong> {{ donation.categoryItem }}</p>
-                  <p><strong>Delivery Type:</strong> {{ donation.deliveryType }}</p>
-                  <p><strong>Target:</strong> {{ donation.targetDonasi }}</p>
-                  <p><strong>User Email:</strong> {{ donation.userEmail }}</p>
+                  <div class="donation-card">
+                    <h2>{{ donation.itemName }}</h2>
+                    <div class="donation-info">
+                      <p><strong>Quantity:</strong> {{ donation.quantity }}</p>
+                      <p><strong>Category:</strong> {{ donation.categoryItem }}</p>
+                      <p><strong>Delivery Type:</strong> {{ donation.deliveryType }}</p>
+                      <p><strong>Target:</strong> {{ donation.targetDonasi }}</p>
+                      <p><strong>User Email:</strong> {{ donation.userEmail }}</p>
+                    </div>
+                    <ion-buttons slot="end" class="button-group">
+                      <ion-button color="primary" fill="outline" @click="editDonation(donation)">
+                        <ion-icon slot="icon-only" :icon="create" style="font-size: 18px;"></ion-icon>
+                      </ion-button>
+                      <ion-button color="danger" fill="outline" @click="deleteDonation(donation.id)">
+                        <ion-icon slot="icon-only" :icon="trash" style="font-size: 18px;"></ion-icon>
+                      </ion-button>
+                    </ion-buttons>
+                  </div>
                 </ion-label>
-                <ion-buttons slot="end">
-                  <ion-button color="primary" fill="outline" @click="editDonation(donation)">
-                    <ion-icon slot="icon-only" :icon="create"></ion-icon>
-                  </ion-button>
-                  <ion-button color="danger" fill="outline" @click="deleteDonation(donation.id)">
-                    <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
               </ion-item>
             </ion-list>
           </div>
   
           <!-- Pagination -->
-          <div class="pagination" v-if="totalPages > 1">
-            <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+          <div class="pagination">
+            <ion-button :disabled="currentPage === 1" @click="previousPage" class="custom-pagination-button">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                 <path d="M15 18l-6-6 6-6"></path>
               </svg>
             </ion-button>
             <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+            <ion-button :disabled="currentPage === totalPages" @click="nextPage" class="custom-pagination-button">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                 <path d="M9 18l6-6-6-6"></path>
               </svg>
@@ -84,9 +82,6 @@
       </ion-content>
     </ion-page>
   </template>
-
-  
-  
   
   <script setup lang="ts">
   import { useRouter } from 'vue-router';
@@ -119,7 +114,7 @@
   // Fetch Donations
   const fetchDonations = async () => {
     const querySnapshot = await getDocs(collection(dataBase, 'donations'));
-    donations.value = querySnapshot.docs.map(doc => {
+    donations.value = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -154,7 +149,7 @@
   // Search Donations
   const filteredDonations = computed(() => {
     const searchLower = searchQuery.value.toLowerCase();
-    return donations.value.filter(donation =>
+    return donations.value.filter((donation) =>
       (donation.itemName || '').toLowerCase().includes(searchLower) ||
       (donation.categoryItem || '').toLowerCase().includes(searchLower)
     );
@@ -186,7 +181,6 @@
     router.push({ name: 'ManageDonationEdit', params: { donationId: donation.id } });
   };
   
-  // Delete Donation
   const deleteDonation = async (donationId: string) => {
     const alert = await alertController.create({
       header: 'Confirm Delete',
@@ -211,21 +205,20 @@
               const toast = await toastController.create({
                 message: 'Donation deleted successfully!',
                 duration: 2000,
-                color: 'danger', // Use danger color for delete actions
-                position: 'top',
+                color: 'danger', // Red color for danger (or success, depending on context)
+                position: 'top'
               });
               toast.present();
-  
+              
               fetchDonations(); // Refresh the donation list after deletion
             } catch (error) {
               console.error('Error deleting donation:', error);
-  
+              
               // Show error toast notification
               const toast = await toastController.create({
-                message: 'Failed to delete donation.',
+                message: 'Error deleting donation. Please try again.',
                 duration: 2000,
-                color: 'danger', // Red color for error
-                position: 'top',
+                color: 'secondary'
               });
               toast.present();
             }
@@ -236,13 +229,12 @@
     await alert.present();
   };
   
-  // Navigate to Add Donation
-  const goToAddDonation = () => router.push('/manage-donation/add');
+  // Navigation helpers
+  const navigateToDashboard = () => router.push('/dashboard');
+  const navigateToAddDonation = () => router.push('/manage-donation/add');
   </script>
   
-  
   <style scoped>
-
   ion-content {
     --background: #f4f7fa;
     font-family: 'Arial', sans-serif;
@@ -253,7 +245,7 @@
   }
   
   .header-actions {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-align: center;
   }
   
@@ -262,84 +254,49 @@
   }
   
   .table-container {
+    padding: 15px;
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-    padding: 15px;
   }
   
-  .table-header {
-    font-weight: bold;
-    background-color: #f0f0f0;
-    border-radius: 8px;
-    padding: 10px;
-  }
-  
-  ion-item {
-    --background-hover: #f7f7f7;
+  .donation-card {
+    padding: 20px;
+    background-color: #f9f9f9;
     border-radius: 10px;
-    margin-bottom: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
   
-  ion-item h2 {
-    font-size: 18px;
+  .donation-card h2 {
+    font-size: 22px;
     font-weight: bold;
     margin: 0;
     color: #333;
   }
   
-  ion-item p {
-    margin: 4px 0;
-    color: #555;
-    font-size: 14px;
-  }
-  
-  ion-buttons ion-button {
-    margin-left: 10px;
+  .donation-info p {
+    margin: 8px 0;
+    color: #666;
   }
   
   .pagination {
-    text-align: center;
-    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
   }
   
-  .pagination span {
-    margin: 0 15px;
-    font-size: 14px;
-    color: #333;
+  .custom-pagination-button {
+    padding: 10px;
+    font-size: 18px;
   }
   
-  ion-button {
-    --border-radius: 8px;
+  .button-group ion-button {
+    margin-left: 8px;
   }
-  
-  ion-button[fill="outline"] {
-    --border-color: #ccc;
-    --border-width: 1px;
-    --color: #333;
-  }
-  
-  ion-button[fill="outline"]:hover {
-    --background: #f2f2f2;
-  }
-  
-  ion-button[color="success"] {
-    --background: #28a745;
-    --color: white;
-  }
-  
-  ion-button[color="primary"] {
-    --background: #007bff;
-    --color: white;
-  }
-  
-  ion-button[color="danger"] {
-    --background: #dc3545;
-    --color: white;
-  }
-  
-  ion-button[color="tertiary"] {
-    --background: #f0f0f0;
-    --color: #007bff;
-  }
+  .button-group {
+  display: flex;
+  justify-content: flex-end;
+}
   </style>
+  

@@ -35,6 +35,9 @@ import ManageDonationPage from "@/views/admin/manage/donations/ManageDonationPag
 import ManageDonationAddPage from "@/views/admin/manage/donations/ManageDonationAddPage.vue";
 import ManageDonationEditPage from "@/views/admin/manage/donations/ManageDonationEditPage.vue";
 
+import SettingPage from "@/views/admin/SettingPage.vue";
+
+
 // // Middleware
 // const authGuard = (to, from, next) => {
 //   onAuthStateChanged(auth, (user) => {
@@ -188,6 +191,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/manage-donation/edit/:donationId",
     name: "ManageDonationEdit",
     component: ManageDonationEditPage,
+  },
+  {
+    path: "/setting",
+    name: "ManageSetting",
+    component: SettingPage,
   },
 ];
 

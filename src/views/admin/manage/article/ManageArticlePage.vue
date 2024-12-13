@@ -1,26 +1,31 @@
 <template>
   <ion-page>
+    <!-- Header -->
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="end">
+        <ion-buttons slot="start">
           <ion-button @click="navigateToDashboard" color="light">
             <ion-icon slot="icon-only" :icon="home"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Manage Articles</ion-title>
       </ion-toolbar>
+
+      <!-- Sub-header for Articles List -->
+      <ion-toolbar color="light">
+        <ion-title size="small">Articles List Overview</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="navigateToAddArticle" color="success">
+            <ion-icon slot="start" :icon="add"></ion-icon>
+            Add Article
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
     </ion-header>
 
+    <!-- Content -->
     <ion-content fullscreen>
       <div class="crud-container">
-        <!-- Add Article Button -->
-        <div class="header-actions">
-          <ion-button expand="block" @click="navigateToAddArticle" color="success">
-            <ion-icon slot="start" :icon="add"></ion-icon>
-            Add New Article
-          </ion-button>
-        </div>
-
         <!-- Search Section -->
         <div class="search-filter-container">
           <ion-searchbar
@@ -31,49 +36,48 @@
           ></ion-searchbar>
         </div>
 
-        <!-- Articles Table -->
+        <!-- Article List -->
         <div class="table-container">
           <ion-list>
-            <!-- Table Header -->
-            <ion-item class="table-header">
-              <ion-label class="table-column">Title</ion-label>
-              <ion-label class="table-column">Author</ion-label>
-              <ion-label class="table-column">Desc</ion-label>
-              <ion-label class="table-column">CA</ion-label>
-              <ion-label class="table-column">LU</ion-label>
-              <ion-label class="table-column">Actions</ion-label>
-            </ion-item>
-
-            <!-- Table Rows -->
             <ion-item v-for="article in paginatedArticles" :key="article.id" lines="inset">
-              <ion-label>
-                <h2>{{ article.title }}</h2>
-                <p><strong>Author :</strong> {{ article.author }}</p>
-                <p><strong>Content :</strong> {{ article.description }}</p>
-                <p><strong>Created At :</strong> {{ formatDate(article.createdAt) }}</p>
-                <p><strong>Last Updated :</strong> {{ formatDate(article.lastUpdated) }}</p>
-              </ion-label>
-              <ion-buttons slot="end">
-                <ion-button color="primary" fill="outline" @click="editArticle(article)">
-                  <ion-icon slot="icon-only" :icon="create"></ion-icon>
-                </ion-button>
-                <ion-button color="danger" fill="outline" @click="deleteArticle(article.id)">
-                  <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-                </ion-button>
-              </ion-buttons>
-            </ion-item>
+  <ion-label>
+    <div class="article-card">
+      <h2>{{ article.title }}</h2>
+      <div class="article-info">
+        <p><strong>Author:</strong> {{ article.author }}</p>
+        <p><strong>Content:</strong> {{ article.description }}</p>
+        <p><strong>Created At:</strong> {{ formatDate(article.createdAt) }}</p>
+        <p><strong>Last Updated:</strong> {{ formatDate(article.lastUpdated) }}</p>
+        <!-- Display Image Link -->
+        <p v-if="article.imageLink">
+          <strong>Image:</strong> 
+          <img :src="article.imageLink" alt="Article Image" style="max-width: 100%; height: auto; margin-top: 10px;" />
+        </p>
+      </div>
+      <ion-buttons slot="end" class="button-group">
+        <ion-button color="primary" fill="outline" @click="editArticle(article)">
+          <ion-icon slot="icon-only" :icon="create" style="font-size: 18px;"></ion-icon>
+        </ion-button>
+        <ion-button color="danger" fill="outline" @click="deleteArticle(article.id)">
+          <ion-icon slot="icon-only" :icon="trash" style="font-size: 18px;"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </div>
+  </ion-label>
+</ion-item>
+
           </ion-list>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-          <ion-button :disabled="currentPage === 1" @click="previousPage" color="tertiary">
+          <ion-button :disabled="currentPage === 1" @click="previousPage" class="custom-pagination-button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
               <path d="M15 18l-6-6 6-6"></path>
             </svg>
           </ion-button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <ion-button :disabled="currentPage === totalPages" @click="nextPage" color="tertiary">
+          <ion-button :disabled="currentPage === totalPages" @click="nextPage" class="custom-pagination-button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
               <path d="M9 18l6-6-6-6"></path>
             </svg>
@@ -83,6 +87,7 @@
     </ion-content>
   </ion-page>
 </template>
+
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
@@ -103,6 +108,7 @@ type Article = {
   description: string;
   createdAt: string;
   lastUpdated: string;
+  imageLink?: string;
 };
 
 // Reactive Variables
@@ -123,6 +129,7 @@ const fetchArticles = async () => {
       description: data.description || 'No Description',
       createdAt: data.createdAt || null, 
       lastUpdated: data.lastUpdated || null, 
+      imageLink: data.imageLink || '',
     } as Article;
   });
 };
@@ -260,7 +267,7 @@ ion-content {
 }
 
 .header-actions {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   text-align: center;
 }
 
@@ -269,45 +276,47 @@ ion-content {
 }
 
 .table-container {
+  padding: 5px; /* Awalnya 15px */
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  padding: 15px;
+  border-radius: 8px; /* Awalnya 12px */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); /* Kurangi shadow jika ingin tampilan lebih minimalis */
 }
 
-.table-header {
-  font-weight: bold;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  padding: 10px;
+
+.article-card {
+  padding: 5px; /* Awalnya 20px */
+  background-color: #f9f9f9;
+  border-radius: 10px; /* Sesuaikan dengan kebutuhan */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 5px; /* Awalnya 20px */
 }
 
-ion-item {
-  --background-hover: #f7f7f7;
-  border-radius: 10px;
-  margin-bottom: 12px;
-}
 
-ion-item h2 {
-  font-size: 18px;
+.article-card h2 {
+  font-size: 14px; /* Awalnya 22px */
   font-weight: bold;
   margin: 0;
   color: #333;
 }
 
-ion-item p {
-  margin: 4px 0;
+.article-info p {
+  margin: 8px 0; /* Awalnya 8px */
   color: #555;
-  font-size: 14px;
+  font-size: 12px; /* Awalnya 14px */
+}
+
+.article-info {
+  margin-top: 10px;
 }
 
 ion-buttons ion-button {
-  margin-left: 10px;
+  margin-left: 15px;
 }
 
 .pagination {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 25px;
+  margin-bottom: 20px;
 }
 
 .pagination span {
@@ -349,4 +358,26 @@ ion-button[color="tertiary"] {
   --background: #f0f0f0;
   --color: #007bff;
 }
+
+@media (max-width: 600px) {
+  .article-card {
+    padding: 15px;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pagination span {
+    font-size: 12px;
+  }
+}
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+}
 </style>
+

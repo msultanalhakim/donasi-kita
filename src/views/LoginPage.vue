@@ -144,6 +144,7 @@ const loginWithGoogle = async () => {
     await router.push("/home");
     console.log(authStore.currentUser); // Mengecek apakah user sudah login
   } catch (error) {
+    console.error("Google registration error:", error);
     alert("Terdapat masalah pada verifikasi akun");
     console.error("Error during Google login:", error);
   }
