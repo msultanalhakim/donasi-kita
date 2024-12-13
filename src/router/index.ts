@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/firebase"; // Pastikan Anda memiliki konfigurasi Firebase
+import { useAuthStore } from "@/authStore"; // Sesuaikan dengan lokasi authStore Anda
 
 // Views
 import LoginPage from "@/views/LoginPage.vue";
@@ -64,15 +63,53 @@ import SettingPage from "@/views/admin/SettingPage.vue";
 //User Routes
 const routes: Array<RouteRecordRaw> = [
   { path: "/", redirect: "/login" },
-  { path: "/login", name: "Login", component: LoginPage },
-  { path: "/register", name: "Register", component: RegisterPage },
-  { path: "/home", name: "Home", component: HomePage },
-  { path: "/donation-menu", name: "Donasi", component: DonasiPage },
-  { path: "/donation-form", name: "Form Donasi", component: DonasiForm },
-  { path: "/profile", name: "Profile", component: ProfilePage },
-  { path: "/beranda", name: "Beranda", component: BerandaPage },
-  { path: "/berita", name: "Berita", component: BeritaPage },
-  { path: "/pengaturan", name: "Pengaturan", component: PengaturanPage },
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: RegisterPage,
+  },
+
+  // sudah login
+  {
+    path: "/home",
+    name: "Home",
+    component: HomePage,
+  },
+  {
+    path: "/donation-menu",
+    name: "Donasi",
+    component: DonasiPage,
+  },
+  {
+    path: "/donation-form",
+    name: "Form Donasi",
+    component: DonasiForm,
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: ProfilePage,
+  },
+  {
+    path: "/beranda",
+    name: "Beranda",
+    component: BerandaPage,
+  },
+  {
+    path: "/berita",
+    name: "Berita",
+    component: BeritaPage,
+  },
+  {
+    path: "/pengaturan",
+    name: "Pengaturan",
+    component: PengaturanPage,
+  },
 
   // Admin Routes
   {
@@ -166,5 +203,28 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
+
+//logic cek login
+
+// // Tambahkan Guard untuk Auth dan Guest
+// router.beforeEach((to, from, next) => {
+//   const authStore = useAuthStore();
+
+//   // Cek status login
+//   const isLoggedIn = !!authStore.currentUser;
+
+//   // Halaman yang memerlukan login
+//   if (to.meta.requiresAuth && !isLoggedIn) {
+//     next({ name: "Login" }); // Redirect ke login jika belum login
+//   }
+//   // Halaman yang hanya untuk guest
+//   else if (to.meta.guestOnly && isLoggedIn) {
+//     next({ name: "Dashboard" }); // Redirect ke dashboard jika sudah login
+//   }
+//   // Lanjutkan jika semua syarat terpenuhi
+//   else {
+//     next();
+//   }
+// });
 
 export default router;

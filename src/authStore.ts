@@ -15,6 +15,7 @@ export const useAuthStore = defineStore("auth", {
     async initializeAuthListener() {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
+          this.currentUser = user;
           console.log("User logged in:", user);
 
           // Ambil role dari Firestore
