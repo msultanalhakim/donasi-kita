@@ -115,7 +115,8 @@ import {
   eyeOffOutline,
   logoGoogle,
 } from "ionicons/icons"; // Jika diperlukan sebagai alternatif lokal
-import { dataBase, auth, googleProvider } from "@/firebase"; // Pastikan path benar
+import { dataBase, auth } from "@/firebase"; // Pastikan path benar
+import { logout } from "@/auth";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   setDoc,
@@ -126,9 +127,7 @@ import {
   collection,
   query,
 } from "firebase/firestore";
-import { signInWithPopup } from "firebase/auth";
 
-//
 const passwordVisible = ref(false);
 const passwordConfirmVisible = ref(false);
 const fullName = ref("");
@@ -186,13 +185,19 @@ async function registerUser() {
     );
     const user = userCredential.user;
 
+    console.log("register:", user);
     // 3. Simpan informasi pengguna ke Firestore
     await setDoc(doc(dataBase, "users", user.uid), {
+      uid: user.uid,
       name: fullName.value,
       email: user.email,
+      password: password.value,
       role: "user",
       createdAt: new Date(),
     });
+
+    //agar tetap masih logout
+    await logout();
 
     alert("Registration successful!");
     router.push("/login"); // Redirect ke halaman login

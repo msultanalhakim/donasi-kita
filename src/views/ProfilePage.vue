@@ -13,7 +13,9 @@
         </div>
         <!-- Name and Membership -->
         <h2 class="username">Muhammad Sultan Alhakim</h2>
-        <p class="membership">Premium Member <ion-icon :icon="starOutline"></ion-icon></p>
+        <p class="membership">
+          Premium Member <ion-icon :icon="starOutline"></ion-icon>
+        </p>
       </div>
 
       <!-- About Section -->
@@ -67,7 +69,7 @@
             <ion-icon :icon="helpCircleOutline" slot="start"></ion-icon>
             <ion-label>Help & Support</ion-label>
           </ion-item>
-          <ion-item button @click="logout">
+          <ion-item button @click="handleLogout">
             <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
             <ion-label>Logout</ion-label>
           </ion-item>
@@ -78,16 +80,26 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 import { IonList, IonItem, IonIcon, IonLabel } from "@ionic/vue";
-import { helpCircleOutline, logOutOutline, optionsOutline, settingsOutline, timeOutline, addCircleOutline, starOutline } from "ionicons/icons";
+import {
+  helpCircleOutline,
+  logOutOutline,
+  optionsOutline,
+  settingsOutline,
+  timeOutline,
+  addCircleOutline,
+  starOutline,
+} from "ionicons/icons";
+import { useAuthStore } from "@/authStore";
 
 const router = useRouter();
 
-const logout = () => {
-  console.log('Logout clicked');
-  // Tambahkan logika logout, seperti menghapus token atau sesi
-  router.push('/login'); // Arahkan ke halaman login setelah logout
+const authStore = useAuthStore(); // Mengakses authStore
+
+const handleLogout = async () => {
+  await authStore.logout(); // Memanggil fungsi logout dari authStore.ts
+  router.push("/login"); // Arahkan ke halaman login setelah logout
 };
 </script>
 
@@ -95,7 +107,7 @@ const logout = () => {
 /* Global Styles */
 ion-content {
   --background: #f9fafc;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
 }
 
 /* Profile Overview */

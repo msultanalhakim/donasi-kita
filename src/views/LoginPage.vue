@@ -74,17 +74,13 @@
 <script setup lang="ts">
 import { ref, inject } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "@/authStore";
 import {
   logoIonic,
   personOutline,
   lockClosedOutline,
   logoGoogle,
-} from "ionicons/icons"; // Jika diperlukan sebagai alternatif lokal
-import { auth, dataBase, googleProvider } from "@/firebase"; // Pastikan path benar
-// import { getDoc, doc } from "firebase/firestore";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+} from "ionicons/icons";
 
 // Reactive Variables
 const userCredentials = ref({
@@ -92,16 +88,16 @@ const userCredentials = ref({
   password: "",
 });
 
-const isRegistering = ref(false);
+// const isRegistering = ref(false);
 const errorMessage = ref("");
 const authStore = useAuthStore();
 const router = useRouter();
 
 // Toggle Between Login and Register Mode
-const toggleAuthMode = () => {
-  isRegistering.value = !isRegistering.value;
-  errorMessage.value = ""; // Clear errors when switching modes
-};
+// const toggleAuthMode = () => {
+//   isRegistering.value = !isRegistering.value;
+//   errorMessage.value = ""; // Clear errors when switching modes
+// };
 
 // Validate Inputs
 const validateInputs = () => {
@@ -117,61 +113,40 @@ const validateInputs = () => {
     return false;
   }
 
-  // if (isRegistering.value && password !== confirmPassword) {
-  //   errorMessage.value = "Passwords do not match.";
-  //   return false;
-  // }
-
   return true;
 };
 
 // Authenticate User
 const authenticate = async () => {
-  errorMessage.value = ""; // Reset error
-
   if (!validateInputs()) return;
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth, // Gunakan auth dari firebase.ts
-      userCredentials.value.email,
-      userCredentials.value.password
-    );
+  await authStore.login(
+    userCredentials.value.email,
+    userCredentials.value.password
+  );
 
-    console.log("Login berhasil:", userCredential.user);
-
-    // Redirect ke dashboard
-    await router.push({ path: "/beranda" });
-  } catch (error) {
-    console.error("Error saat login:", error);
-    errorMessage.value =
-      error instanceof Error ? error.message : "Error saat login.";
+  if (authStore.currentUser) {
+    alert("Akun berhasil diverifikasi");
+    await router.push("/home"); // Redirect jika login berhasil
+  } else {
+    alert("Terdapat masalah pada verifikasi akun");
+    errorMessage.value = authStore.errorMessage; // Tampilkan error jika ada
   }
 };
 
-// Google Login Function
+// Fungsi untuk login dengan Google
 const loginWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    console.log("Google login data:", user);
+    await authStore.loginWithGoogle(); // Menggunakan loginWithGoogle dari authStore
 
-    const { email, displayName, uid } = user;
-    const userDocRef = doc(dataBase, "users", uid); // Gunakan UID sebagai ID dokumen
-
-    // Simpan data pengguna di Firestore
-    await setDoc(userDocRef, {
-      uid: uid,
-      name: displayName || "No name provided", // Gunakan default jika displayName kosong
-      email: email,
-      role: "user",
-      createdAt: new Date(),
-    });
-
-    alert("Data Berhasil Disimpan di Firestore");
-    await router.push("/beranda"); // Redirect ke halaman beranda setelah sukses login
+    alert("Akun berhasil diverifikasi");
+    // Redirect atau tampilkan data setelah login berhasil
+    await router.push("/home");
+    console.log(authStore.currentUser); // Mengecek apakah user sudah login
   } catch (error) {
     console.error("Google registration error:", error);
+    alert("Terdapat masalah pada verifikasi akun");
+    console.error("Error during Google login:", error);
   }
 };
 </script>
