@@ -32,8 +32,8 @@ const guestRoute = ["Login", "Register"];
 const adminRoute = ["ManageUser", "ManageTarget", "ManageCategory"];
 
 // Pantau perubahan auth dan navigasi
-onMounted(() => {
-  authStore.loadUserFromLocalStorage(); // Ambil data dari localStorage
+onMounted(async () => {
+  await authStore.loadUserFromLocalStorage(); // Ambil data dari localStorage
   user.value = authStore.currentUser;
   console.log("Info user", user.value);
 

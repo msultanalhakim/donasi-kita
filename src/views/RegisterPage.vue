@@ -10,17 +10,11 @@
             />
           </div>
           <h1 class="title">Donasi Kita</h1>
-          <p class="subtitle">
-            Your journey to making a difference begins here!
-          </p>
+          <p class="subtitle">Your journey to making a difference begins here!</p>
 
           <!-- Input untuk Nama Lengkap -->
           <ion-item class="form-input">
-            <ion-icon
-              :icon="personOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <ion-icon :icon="personOutline" slot="start" class="input-icon"></ion-icon>
             <ion-input
               v-model="fullName"
               placeholder="Full Name"
@@ -32,11 +26,7 @@
 
           <!-- Input untuk Email -->
           <ion-item class="form-input">
-            <ion-icon
-              :icon="mailOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <ion-icon :icon="mailOutline" slot="start" class="input-icon"></ion-icon>
             <ion-input
               v-model="email"
               placeholder="Email Address"
@@ -149,12 +139,7 @@ function toggleVisibility(type: "password" | "confirmPassword") {
 
 // Register user
 async function registerUser() {
-  if (
-    !fullName.value ||
-    !email.value ||
-    !password.value ||
-    !confirmPassword.value
-  ) {
+  if (!fullName.value || !email.value || !password.value || !confirmPassword.value) {
     alert("Please fill in all fields.");
     return;
   }
@@ -191,7 +176,6 @@ async function registerUser() {
       uid: user.uid,
       name: fullName.value,
       email: user.email,
-      password: password.value,
       role: "user",
       createdAt: new Date(),
     });
