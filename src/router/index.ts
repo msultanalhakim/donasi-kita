@@ -2,16 +2,21 @@ import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
 import { useAuthStore } from "@/authStore"; // Sesuaikan dengan lokasi authStore Anda
 
-// Views
+
+//test
+import TestPage from "@/views/TestPage.vue"; 
+
+//user Views
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
 import HomePage from "@/views/HomePage.vue";
 import DonasiPage from "@/views/DonasiPage.vue";
 import DonasiForm from "@/views/DonasiForm.vue";
 import ProfilePage from "@/views/ProfilePage.vue";
-import BerandaPage from "@/views/BerandaPage.vue";
+import HistoryPage from "@/views/HistoryPage.vue";
 import BeritaPage from "@/views/BeritaPage.vue";
 import PengaturanPage from "@/views/PengaturanPage.vue";
+import DetailDonasiPage from "@/views/DetailDonasiPage.vue";
 
 // Admin Views
 import DashboardPage from "@/views/admin/DashboardPage.vue";
@@ -62,12 +67,18 @@ import SettingPage from "@/views/admin/SettingPage.vue";
 
 //User Routes
 const routes: Array<RouteRecordRaw> = [
+  {
+    path: "/test",
+    name: "test",
+    component: TestPage,
+  },
   { path: "/", redirect: "/login" },
   {
     path: "/login",
     name: "Login",
     component: LoginPage,
   },
+  
   {
     path: "/register",
     name: "Register",
@@ -86,7 +97,7 @@ const routes: Array<RouteRecordRaw> = [
     component: DonasiPage,
   },
   {
-    path: "/donation-form",
+    path: "/form-donasi",
     name: "Form Donasi",
     component: DonasiForm,
   },
@@ -96,10 +107,17 @@ const routes: Array<RouteRecordRaw> = [
     component: ProfilePage,
   },
   {
-    path: "/beranda",
-    name: "Beranda",
-    component: BerandaPage,
+    path: "/riwayat-donasi",
+    name: "Riwayat Donasi",
+    component: HistoryPage,
   },
+
+  {
+    path: "/detail-donasi/:donasiId",
+    name: "Detail Donasi",
+    component: DetailDonasiPage,
+  },
+
   {
     path: "/berita",
     name: "Berita",

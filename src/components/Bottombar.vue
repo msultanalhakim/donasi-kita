@@ -10,12 +10,12 @@
         <ion-label class="tab-label">Home</ion-label>
       </ion-tab-button>
 
-      <ion-tab-button tab="Discover" href="/beranda">
-        <ion-icon :icon="compass" class="tab-icon"></ion-icon>
-        <ion-label class="tab-label">Beranda</ion-label>
+      <ion-tab-button tab="Discover" href="/riwayat-donasi">
+        <ion-icon :icon="newspaper" class="tab-icon"></ion-icon>
+        <ion-label class="tab-label">Riwayat Donasi</ion-label>
       </ion-tab-button>
 
-      <ion-tab-button tab="Donasi" href="/donation-menu">
+      <ion-tab-button tab="Donasi" href="/form-donasi">
         <ion-icon :icon="giftSharp" class="tab-icon"></ion-icon>
         <ion-label class="tab-label">Donasi</ion-label>
       </ion-tab-button>
@@ -25,10 +25,10 @@
         <ion-label class="tab-label">Wishlist</ion-label>
       </ion-tab-button> -->
 
-      <ion-tab-button tab="Chat" href="/chat">
+      <!-- <ion-tab-button tab="Chat" href="/chat">
         <ion-icon :icon="chatbubbles" class="tab-icon"></ion-icon>
         <ion-label class="tab-label">Chat</ion-label>
-      </ion-tab-button>
+      </ion-tab-button> -->
 
       <ion-tab-button tab="Profile" href="/profile">
         <ion-icon :icon="person" class="tab-icon"></ion-icon>
@@ -55,6 +55,7 @@ import {
   chatbubbles,
   person,
   giftSharp,
+  newspaper,
 } from "ionicons/icons";
 </script>
 

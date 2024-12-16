@@ -42,8 +42,8 @@
       <div class="special-offers">
         <!-- Section Header -->
         <div class="special-header">
-          <h2>Donation Recommendation</h2>
-          <!-- <ion-button fill="clear" class="see-all-button">See All</ion-button> -->
+          <h2>#SpecialForYou</h2>
+          <ion-button fill="clear" class="see-all-button">See All</ion-button>
         </div>
 
         <!-- Swiper Section -->
@@ -82,16 +82,15 @@
       <div class="category-section">
         <div class="category-header">
           <h2>Explore Categories</h2>
-          <ion-button fill="clear" class="see-all-button" @click="toggleSeeAll">
-            See All
-          </ion-button>
+          <ion-button
+            fill="clear"
+            class="see-all-button"
+            @click="router.push('/donation-menu')"
+            >See All</ion-button
+          >
         </div>
         <div class="category-grid">
-          <div
-            v-for="(category, index) in categories"
-            :key="index"
-            class="category-card"
-          >
+          <div v-for="(category, index) in categories" :key="index" class="category-card">
             <div class="icon-container">
               <ion-icon :icon="category.icon" class="category-icon"></ion-icon>
             </div>
@@ -110,18 +109,15 @@
           </div>
           <div class="step">
             <ion-icon :icon="location" class="step-icon"></ion-icon>
-            <p>
-              Choose a time for the pickup or drop-off at a nearby location.
-            </p>
+            <p>Choose a time for the pickup or drop-off at a nearby location.</p>
           </div>
           <div class="step">
             <ion-icon :icon="cube" class="step-icon"></ion-icon>
-            <p>
-              Your items are delivered to those in need, creating a real impact!
-            </p>
+            <p>Your items are delivered to those in need, creating a real impact!</p>
           </div>
         </div>
       </div>
+      <!-- </div> loading-->
     </ion-content>
   </ion-page>
 </template>
@@ -151,9 +147,6 @@ import {
   logoInstagram,
   logoTwitter,
   cubeOutline,
-  heart,
-  newspaper,
-  clipboard,
 } from "ionicons/icons";
 import router from "@/router";
 import { useAuthStore } from "@/authStore";
@@ -185,50 +178,15 @@ const offers = [
   },
 ];
 
-const articles = ref([
-  {
-    title: "Meningkatkan Literasi di Indonesia",
-    content: "Literasi menjadi kunci kemajuan bangsa. Program-program literasi...",
-    image: "/assets/images/literasi.jpg", // Gambar pertama
-  },
-  {
-    title: "Pengaruh Teknologi pada Pendidikan",
-    content: "Teknologi membawa banyak perubahan dalam cara kita belajar...",
-    image: "/assets/images/teknologi.jpg", // Gambar kedua
-  },
-  {
-    title: "Tips Donasi Efektif",
-    content: "Agar donasi tepat sasaran, ada beberapa tips penting yang perlu...",
-    image: "/assets/images/donasi.jpg", // Gambar ketiga
-  },
-]);
-
-// Fungsi untuk navigasi ke halaman artikel penuh
-const goToArticles = () => {
-  router.push("/all-articles");
-};
-
-// Mock data untuk kategori yang telah diperbarui
+// Mock data for categories
 const categories = [
-  { name: "Donasi", icon: heart },
-  { name: "Article", icon: newspaper },
-  { name: "Laporan", icon: clipboard },
+  { name: "Clothing", icon: shirt },
+  { name: "Electronics", icon: phonePortrait },
+  { name: "Vehicles", icon: bicycle },
+  { name: "Books", icon: book },
+  { name: "Toys & Games", icon: gameController },
+  { name: "Accessories", icon: bag },
 ];
-
-// Fungsi untuk mendapatkan route berdasarkan nama kategori
-const getCategoryRoute = (categoryName: string) => {
-  switch (categoryName) {
-    case "Article":
-      return "/article";
-    case "Target Donasi":
-      return "/donation-target";
-    case "History":
-      return "/history";
-    default:
-      return "/";
-  }
-};
-
 
 // State for Swiper
 const currentSlide = ref(0);
@@ -250,8 +208,7 @@ const disasterNews = ref([
   {
     title: "Donate Clothes to the Needy",
     image: "/assets/images/login-illustration.png",
-    description:
-      "Clothing donations are needed urgently in the local community.",
+    description: "Clothing donations are needed urgently in the local community.",
   },
   {
     title: "Donate Electronics to Empower",
@@ -276,6 +233,15 @@ const successStories = ref([
       "Donating your old devices helped students excel in their online classes during the pandemic.",
   },
 ]);
+
+onMounted(async () => {
+  await authStore.loadUserFromLocalStorage();
+  user.value = authStore.currentUser;
+
+  if (user.value) {
+    loading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -310,7 +276,7 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0 24px;
+  padding: 18px 0 24px;
 }
 
 .profile-details {
@@ -368,7 +334,7 @@ ion-content {
   font-size: 16px;
   border: none;
   outline: none;
-  /* padding: 3px 0; */
+  padding: 8px 0;
   background-color: transparent;
 }
 
@@ -378,7 +344,7 @@ ion-content {
 
 /* General Container */
 .special-offers {
-  /* padding: 12px 5px 0; */
+  padding: 12px 18px 0;
 }
 
 /* Section Header */
@@ -386,8 +352,7 @@ ion-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* margin: 0 12px; */
-  padding: 20px
+  margin: 0 12px;
 }
 
 .special-header h2 {
@@ -425,7 +390,7 @@ ion-content {
 }
 
 ion-card-header {
-  padding: 5px;
+  padding: 10px;
 }
 
 ion-card-title {
@@ -462,8 +427,8 @@ ion-card-content {
 
 /* Category Section */
 .category-section {
-  margin: 5px 5px 0;
-  /* padding: 10px 20px; */
+  margin: 2px 15px 0;
+  padding: 10px 20px;
 }
 
 .category-header {
@@ -477,26 +442,26 @@ ion-card-content {
   font-weight: bold;
   color: #333;
   margin: 0;
-  padding: 20px;
 }
 
 .category-grid {
   padding: 4px 0;
   display: flex;
-  /* justify-content: space-between; */
-  padding-left: 15px;
-  flex-wrap: wrap;  /* Allow items to wrap into the next row */
-   gap: 40px;/* Add gap between items */
-
+  width: 100%;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 10px; /* Prevent content from hiding */
+  scroll-snap-type: x mandatory;
 }
 
 .category-card {
-  width: 15%; /* Set each card to take up 18% of the width */
   display: flex;
+  width: 25%;
   flex-direction: column;
   align-items: center;
   transition: transform 0.3s ease;
   text-align: center;
+  scroll-snap-align: start;
 }
 
 .category-card:hover {
@@ -526,40 +491,64 @@ ion-card-content {
   margin-top: 8px;
 }
 
-/* Artikel Section Styling */
-.article-section {
-  padding: 20px 5px 0;
+/* How It Works Section */
+.how-it-works {
+  margin: 20px 24px;
+  padding: 14px 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.article-section h2{
-  font-size: 20px;
-  color: #333;
-  font-weight: bold;
-  margin: 0;
-  padding: 20px;
-}
-
-.article-flex-container {
-  display: flex;
-  align-items: center;
+.steps-container {
+  display: grid;
   gap: 20px;
-  margin-bottom: 20px;
 }
 
-.article-image {
-  width: 150px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 10px;
+.step {
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
-.article-text {
-  flex: 1;
+.step-icon {
+  font-size: 45px;
+  color: #85a98f;
 }
 
-.article-title {
-  font-size: 15px;
-  font-weight: bold;
+.step p {
+  font-size: 16px;
   color: #333;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Spinner for loading */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #85a98f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

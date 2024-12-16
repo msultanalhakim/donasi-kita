@@ -111,20 +111,20 @@ export const useAuthStore = defineStore("auth", {
     },
 
     // Load currentUser dari localStorage saat aplikasi dimulai
-    loadUserFromLocalStorage() {
+    async loadUserFromLocalStorage() {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
-        this.currentUser = JSON.parse(storedUser);
+        this.currentUser = await JSON.parse(storedUser);
 
         // Ambil data user berdasarkan email dari Firestore untuk mendapatkan role
         const userDocRef = doc(dataBase, "users", this.currentUser.uid); // Menggunakan UID yang sudah ada di localStorage
-        getDoc(userDocRef)
-          .then((docSnap) => {
+        await getDoc(userDocRef)
+          .then(async (docSnap) => {
             if (docSnap.exists()) {
-              const userData = docSnap.data();
+              const userData =  docSnap.data();
               // Menambahkan properti 'role' dari Firestore ke currentUser
               this.currentUser.role = userData.role;
-              this.currentUser.name = userData.name;
+              this.currentUser.name = userData.name ;
             } else {
               console.log("No user document found in Firestore");
             }
