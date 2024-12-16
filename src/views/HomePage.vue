@@ -35,8 +35,8 @@
       <div class="special-offers">
         <!-- Section Header -->
         <div class="special-header">
-          <h2>#SpecialForYou</h2>
-          <ion-button fill="clear" class="see-all-button">See All</ion-button>
+          <h2>Donation Recommendation</h2>
+          <!-- <ion-button fill="clear" class="see-all-button">See All</ion-button> -->
         </div>
 
         <!-- Swiper Section -->
@@ -79,16 +79,13 @@
       <div class="category-section">
         <div class="category-header">
           <h2>Explore Categories</h2>
-          <ion-button
-            fill="clear"
-            class="see-all-button"
-            @click="router.push('/donation-menu')"
-            >See All</ion-button
-          >
+          <ion-button fill="clear" class="see-all-button" @click="toggleSeeAll">
+            See All
+          </ion-button>
         </div>
         <div class="category-grid">
           <div
-            v-for="(category, index) in categories"
+            v-for="(category, index) in visibleCategories"
             :key="index"
             class="category-card"
           >
@@ -100,28 +97,46 @@
         </div>
       </div>
 
-      <!-- How It Works Section -->
-      <div class="how-it-works">
-        <h2>How It Works</h2>
-        <div class="steps-container">
-          <div class="step">
-            <ion-icon :icon="notifications" class="step-icon"></ion-icon>
-            <p>Select the item you wish to donate from your collection.</p>
+      <!-- Artikel Section -->
+      <div class="article-section">
+        <h2>Latest Articles</h2>
+
+        <!-- List Artikel -->
+        <div
+          v-for="(article, index) in articles"
+          :key="index"
+          class="article-item"
+        >
+          <div class="article-flex-container">
+            <img :src="article.image" alt="Article Image" class="article-image" />
+            <div class="article-text">
+              <h3 class="article-title">{{ article.title }}</h3>
+              <p class="article-content">{{ article.content }}</p>
+            </div>
           </div>
-          <div class="step">
-            <ion-icon :icon="location" class="step-icon"></ion-icon>
-            <p>
-              Choose a time for the pickup or drop-off at a nearby location.
-            </p>
-          </div>
-          <div class="step">
-            <ion-icon :icon="cube" class="step-icon"></ion-icon>
-            <p>
-              Your items are delivered to those in need, creating a real impact!
-            </p>
-          </div>
+          <hr class="article-divider" />
+        </div>
+
+        <!-- Tombol Baca Selengkapnya -->
+        <div class="read-more-container">
+          <ion-button class="read-more-button" expand="block" @click="goToArticles">
+            Read more
+          </ion-button>
         </div>
       </div>
+
+      <!-- Footer Section -->
+<footer>
+  <div class="footer-container">
+    <p class="copyright-text">
+      © 2024 Donasi Kita. All Rights Reserved.
+    </p>
+    <!-- <p class="footer-credits">
+      Created by <a href="https://example.com" target="_blank">Donasi-kita</a>
+    </p> -->
+  </div>
+</footer>
+      
     </ion-content>
   </ion-page>
 </template>
@@ -151,6 +166,9 @@ import {
   logoInstagram,
   logoTwitter,
   cubeOutline,
+  heart,
+  newspaper,
+  clipboard,
 } from "ionicons/icons";
 import router from "@/router";
 
@@ -178,15 +196,50 @@ const offers = [
   },
 ];
 
-// Mock data for categories
+const articles = ref([
+  {
+    title: "Meningkatkan Literasi di Indonesia",
+    content: "Literasi menjadi kunci kemajuan bangsa. Program-program literasi...",
+    image: "/assets/images/literasi.jpg", // Gambar pertama
+  },
+  {
+    title: "Pengaruh Teknologi pada Pendidikan",
+    content: "Teknologi membawa banyak perubahan dalam cara kita belajar...",
+    image: "/assets/images/teknologi.jpg", // Gambar kedua
+  },
+  {
+    title: "Tips Donasi Efektif",
+    content: "Agar donasi tepat sasaran, ada beberapa tips penting yang perlu...",
+    image: "/assets/images/donasi.jpg", // Gambar ketiga
+  },
+]);
+
+// Fungsi untuk navigasi ke halaman artikel penuh
+const goToArticles = () => {
+  router.push("/all-articles");
+};
+
+// Mock data untuk kategori yang telah diperbarui
 const categories = [
-  { name: "Clothing", icon: shirt },
-  { name: "Electronics", icon: phonePortrait },
-  { name: "Vehicles", icon: bicycle },
-  { name: "Books", icon: book },
-  { name: "Toys & Games", icon: gameController },
-  { name: "Accessories", icon: bag },
+  { name: "Donasi", icon: heart },
+  { name: "Article", icon: newspaper },
+  { name: "Laporan", icon: clipboard },
 ];
+
+// Fungsi untuk mendapatkan route berdasarkan nama kategori
+const getCategoryRoute = (categoryName: string) => {
+  switch (categoryName) {
+    case "Article":
+      return "/article";
+    case "Target Donasi":
+      return "/donation-target";
+    case "History":
+      return "/history";
+    default:
+      return "/";
+  }
+};
+
 
 // State for Swiper
 const currentSlide = ref(0);
@@ -203,37 +256,19 @@ const goToSlide = (index: number) => {
   swiperInstance?.slideToLoop(index);
 };
 
-// Mock data for disaster news
-const disasterNews = ref([
-  {
-    title: "Donate Clothes to the Needy",
-    image: "/assets/images/login-illustration.png",
-    description:
-      "Clothing donations are needed urgently in the local community.",
-  },
-  {
-    title: "Donate Electronics to Empower",
-    image: "/assets/images/login-illustration.png",
-    description:
-      "Your old electronics can change lives by providing access to technology.",
-  },
-]);
+// State for managing visible categories
+const visibleCategories = ref(categories.slice(0, 4)); // Initially show first 5 categories
+const showAll = ref(false);
 
-// Mock data for success stories
-const successStories = ref([
-  {
-    title: "The Impact of Donated Clothes",
-    image: "/assets/images/login-illustration.png",
-    testimonial:
-      "Thanks to your generous clothing donations, many families have been able to stay warm this winter.",
-  },
-  {
-    title: "A New Life Through Electronics",
-    image: "/assets/images/login-illustration.png",
-    testimonial:
-      "Donating your old devices helped students excel in their online classes during the pandemic.",
-  },
-]);
+// Toggle function for showing more categories
+const toggleSeeAll = () => {
+  showAll.value = !showAll.value;
+  if (showAll.value) {
+    visibleCategories.value = categories; // Show all categories
+  } else {
+    visibleCategories.value = categories.slice(0, 4); // Show only first 5 categories
+  }
+};
 </script>
 
 <style scoped>
@@ -268,7 +303,7 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 0 24px;
+  padding: 0 0 24px;
 }
 
 .profile-details {
@@ -326,7 +361,7 @@ ion-content {
   font-size: 16px;
   border: none;
   outline: none;
-  padding: 8px 0;
+  /* padding: 3px 0; */
   background-color: transparent;
 }
 
@@ -336,7 +371,7 @@ ion-content {
 
 /* General Container */
 .special-offers {
-  padding: 12px 18px 0;
+  /* padding: 12px 5px 0; */
 }
 
 /* Section Header */
@@ -344,7 +379,8 @@ ion-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 12px;
+  /* margin: 0 12px; */
+  padding: 20px
 }
 
 .special-header h2 {
@@ -382,7 +418,7 @@ ion-content {
 }
 
 ion-card-header {
-  padding: 10px;
+  padding: 5px;
 }
 
 ion-card-title {
@@ -419,8 +455,8 @@ ion-card-content {
 
 /* Category Section */
 .category-section {
-  margin: 2px 15px 0;
-  padding: 10px 20px;
+  margin: 5px 5px 0;
+  /* padding: 10px 20px; */
 }
 
 .category-header {
@@ -434,26 +470,26 @@ ion-card-content {
   font-weight: bold;
   color: #333;
   margin: 0;
+  padding: 20px;
 }
 
 .category-grid {
   padding: 4px 0;
   display: flex;
-  width: 100%;
-  gap: 20px;
-  overflow-x: auto;
-  padding-bottom: 10px; /* Prevent content from hiding */
-  scroll-snap-type: x mandatory;
+  /* justify-content: space-between; */
+  padding-left: 15px;
+  flex-wrap: wrap;  /* Allow items to wrap into the next row */
+   gap: 40px;/* Add gap between items */
+
 }
 
 .category-card {
+  width: 15%; /* Set each card to take up 18% of the width */
   display: flex;
-  width: 25%;
   flex-direction: column;
   align-items: center;
   transition: transform 0.3s ease;
   text-align: center;
-  scroll-snap-align: start;
 }
 
 .category-card:hover {
@@ -483,33 +519,97 @@ ion-card-content {
   margin-top: 8px;
 }
 
-/* How It Works Section */
-.how-it-works {
-  margin: 20px 24px;
-  padding: 14px 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Artikel Section Styling */
+.article-section {
+  padding: 20px 5px 0;
 }
 
-.steps-container {
-  display: grid;
-  gap: 20px;
-}
-
-.step {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.step-icon {
-  font-size: 45px;
-  color: #85a98f;
-}
-
-.step p {
-  font-size: 16px;
+.article-section h2{
+  font-size: 20px;
   color: #333;
+  font-weight: bold;
+  margin: 0;
+  padding: 20px;
 }
+
+.article-flex-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.article-image {
+  width: 150px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.article-text {
+  flex: 1;
+}
+
+.article-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.article-content {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.article-divider {
+  border: none;
+  height: 1px;
+  background-color: #ccc;
+  margin: 15px 0;
+}
+
+.read-more-container {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.read-more-button {
+  --background: #85a98f;
+  --background-hover: #5a6c57;
+  --color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 8px;
+  width: 40%;
+  padding-bottom: 20px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Footer Section Styles */
+footer {
+  /* background-color: #f8f9fa; Warna latar footer */
+  color: #6c757d; /* Warna teks */
+  text-align: center; /* Pusatkan teks */
+  padding: 20px 10px; /* Jarak padding atas-bawah dan kiri-kanan */
+  font-size: 14px; /* Ukuran font */
+  border-top: 1px solid #e7e7e7; /* Garis pemisah atas footer */
+}
+
+.footer-container p {
+  margin: 5px 0; /* Spasi antar paragraf */
+}
+
+.footer-container a {
+  text-decoration: none; /* Hilangkan garis bawah tautan */
+  color: #007bff; /* Warna biru khas tautan */
+}
+
+.footer-container a:hover {
+  text-decoration: underline; /* Tambahkan garis bawah saat hover */
+}
+
+
 </style>
