@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" style="--background: #85A98F;">
       <div class="ion-padding login-page">
         <div class="form-container">
           <div class="header-image">
