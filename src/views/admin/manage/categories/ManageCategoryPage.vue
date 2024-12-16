@@ -1,111 +1,77 @@
 <template>
   <ion-page>
-    <!-- Side Menu -->
-    <ion-menu side="start" menu-id="first" content-id="main-content">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Menu</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-list>
-          <ion-item button @click="() => router.push('/dashboard')">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
-            Dashboard
-          </ion-item>
-          <ion-item button @click="() => router.push('/manage-user')">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
-            Manage Users
-          </ion-item>
-          <ion-item button @click="() => router.push('/manage-category')">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
-            Manage Categories
-          </ion-item>
-          <ion-item button @click="navigateTo('settings')">
-            <ion-icon slot="start" :icon="settingsOutline"></ion-icon>
-            Settings
-          </ion-item>
-        </ion-list>
-      </ion-content>
-    </ion-menu>
-
-    <!-- Main Content -->
+    <!-- Header -->
     <ion-header>
-      <ion-toolbar>
+      <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button> <!-- Menu Button -->
+          <ion-button @click="() => router.push('/dashboard')" color="light">
+            <ion-icon slot="icon-only" :icon="home"></ion-icon>
+          </ion-button>
         </ion-buttons>
         <ion-title>Manage Categories</ion-title>
       </ion-toolbar>
-    </ion-header>
 
-    <ion-content id="main-content" fullscreen>
-      <div class="crud-container">
-        <!-- Add Category Button -->
-        <div class="header-actions">
-          <ion-button expand="block" @click="addCategory">
-            <ion-icon slot="start" :icon="addOutline"></ion-icon>
+      <!-- Sub-header for Categories List -->
+      <ion-toolbar color="light">
+        <ion-title size="small">Categories List Overview</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="() => router.push('/manage-category/add')" color="success">
+            <ion-icon slot="start" :icon="add"></ion-icon>
             Add New Category
           </ion-button>
-        </div>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-        <!-- Search and Filter Section (80:20 ratio) -->
+    <!-- Content -->
+    <ion-content fullscreen>
+      <div class="crud-container">
+        <!-- Search Section -->
         <div class="search-filter-container">
-          <!-- Search Bar (80%) -->
-          <div class="search-bar">
-            <ion-searchbar v-model="searchQuery" debounce="500" placeholder="Search categories..."></ion-searchbar>
-          </div>
-
-          <!-- Filter Icon (20%) -->
-          <div class="filter-icon">
-            <ion-icon :icon="filterOutline" @click="toggleFilterMenu"></ion-icon>
-          </div>
+          <ion-searchbar
+            v-model="searchQuery"
+            debounce="500"
+            placeholder="Search categories..."
+            show-clear-button="focus"
+          ></ion-searchbar>
         </div>
 
-        <!-- Filter Section (Hidden by Default) -->
-        <div v-if="isFilterMenuVisible" class="filter-sort">
-          <ion-item>
-            <ion-label>Sort By</ion-label>
-            <ion-select v-model="sortOption" @ionChange="sortCategories">
-              <ion-select-option value="name">Name</ion-select-option>
-              <ion-select-option value="description">Description</ion-select-option>
-            </ion-select>
-          </ion-item>
-        </div>
-
-        <!-- Categories Table -->
+        <!-- Categories List -->
         <div class="table-container">
           <ion-list>
-            <!-- Table Header -->
-            <ion-item class="table-header">
-              <ion-label class="table-column">Category Name</ion-label>
-              <ion-label class="table-column">Actions</ion-label>
-            </ion-item>
-
-            <!-- Table Rows -->
-            <ion-item v-for="category in paginatedCategories" :key="category.id">
+            <ion-item v-for="category in paginatedCategories" :key="category.id" lines="inset">
               <ion-label>
-                <h2>{{ category.name }}</h2>
-                <p>{{ category.description }}</p>
+                <div class="category-card">
+                  <h2>{{ category.name }}</h2>
+                  <div class="category-info">
+                    <p><strong>Description:</strong> {{ category.description }}</p>
+                  </div>
+                  <ion-buttons slot="end" class="button-group">
+                    <ion-button color="primary" fill="outline" @click="editCategory(category)">
+                      <ion-icon slot="icon-only" :icon="create" style="font-size: 18px;"></ion-icon>
+                    </ion-button>
+                    <ion-button color="danger" fill="outline" @click="deleteCategory(category.id)">
+                      <ion-icon slot="icon-only" :icon="trash" style="font-size: 18px;"></ion-icon>
+                    </ion-button>
+                  </ion-buttons>
+                </div>
               </ion-label>
-              <ion-button color="primary" fill="outline" @click="editCategory(category.id)">
-                <ion-icon slot="icon-only" :icon="create"></ion-icon>
-              </ion-button>
-              <ion-button color="danger" fill="outline" @click="deleteCategory(category.id)">
-                <ion-icon slot="icon-only" :icon="trash"></ion-icon>
-              </ion-button>
             </ion-item>
           </ion-list>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-          <ion-button :disabled="currentPage === 1" @click="previousPage">
-            Previous
+          <ion-button :disabled="currentPage === 1" @click="previousPage" class="custom-pagination-button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
           </ion-button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <ion-button :disabled="currentPage === totalPages" @click="nextPage">
-            Next
+          <ion-button :disabled="currentPage === totalPages" @click="nextPage" class="custom-pagination-button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
           </ion-button>
         </div>
       </div>
@@ -113,63 +79,72 @@
   </ion-page>
 </template>
 
-<script setup lang="ts">
-  import { useRouter } from 'vue-router';
-import { ref, computed } from 'vue';
-import { trash, create, filterOutline, addOutline, settingsOutline } from "ionicons/icons";
 
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { dataBase } from '@/firebase';
+import { trash, create, add, home } from 'ionicons/icons';
+import { alertController, toastController } from '@ionic/vue';
+
+// Router
 const router = useRouter();
 
-// Example Category Data
-const categories = ref([
-  { id: 1, name: 'Electronics', description: 'Devices and gadgets' },
-  { id: 2, name: 'Furniture', description: 'Home and office furniture' },
-  { id: 3, name: 'Clothing', description: 'Apparel and accessories' },
-  { id: 4, name: 'Books', description: 'All kinds of books' },
-  { id: 5, name: 'Toys', description: 'Children and adult toys' },
-  { id: 6, name: 'Sports', description: 'Sporting goods' },
-]);
+// Define the Category type
+type Category = {
+  id: string;
+  name: string;
+  description: string;
+};
 
-const sortOption = ref('name');
-const itemsPerPage = 3;
+// Reactive Variables
+const categories = ref<Category[]>([]);
+const itemsPerPage = 5;
 const currentPage = ref(1);
 const searchQuery = ref('');
-const isFilterMenuVisible = ref(false);
 
-// Methods for CRUD operations
-const addCategory = () => {
-  console.log('Add Category');
-};
-
-const editCategory = (id: number) => {
-  console.log(`Edit Category: ${id}`);
-};
-
-const deleteCategory = (id: number) => {
-  console.log(`Delete Category: ${id}`);
-};
-
-// Sorting Functionality
-const sortCategories = () => {
-  categories.value.sort((a, b) => {
-    if (sortOption.value === 'name') {
-      return a.name.localeCompare(b.name);
-    } else if (sortOption.value === 'description') {
-      return a.description.localeCompare(b.description);
-    }
-    return 0;
+// Fetch Categories
+const fetchCategories = async () => {
+  const querySnapshot = await getDocs(collection(dataBase, 'categories'));
+  categories.value = querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name || 'Unnamed Category',
+      description: data.description || 'No Description',
+    } as Category;
   });
 };
 
-// Search Functionality
+// Call fetchCategories on component mount
+onMounted(() => {
+  fetchCategories();
+});
+
+// Listen for the custom data-updated event
+const refreshData = () => {
+  fetchCategories();
+};
+
+onMounted(() => {
+  window.addEventListener('data-updated', refreshData);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('data-updated', refreshData);
+});
+
+// Search Categories
 const filteredCategories = computed(() => {
   const searchLower = searchQuery.value.toLowerCase();
   return categories.value.filter(category =>
-    category.name.toLowerCase().includes(searchLower) || category.description.toLowerCase().includes(searchLower)
+    (category.name || '').toLowerCase().includes(searchLower) ||
+    (category.description || '').toLowerCase().includes(searchLower)
   );
 });
 
-// Pagination Functionality
+// Pagination
 const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage));
 
 const paginatedCategories = computed(() => {
@@ -190,19 +165,63 @@ const nextPage = () => {
   }
 };
 
-// Toggle the filter menu visibility
-const toggleFilterMenu = () => {
-  isFilterMenuVisible.value = !isFilterMenuVisible.value;
-}
-// Navigation Function
-const navigateTo = (page: string) => {
-  console.log(`Navigate to ${page}`);
+// Edit Category
+const editCategory = (category: Category) => {
+  router.push({ name: 'ManageCategoryEdit', params: { categoriesId: category.id } });
+};
+
+// Delete Category
+const deleteCategory = async (categoriesId: string) => {
+  const alert = await alertController.create({
+    header: 'Confirm Delete',
+    message: 'Are you sure you want to delete this category?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          console.log('Delete canceled');
+        }
+      },
+      {
+        text: 'Yes',
+        handler: async () => {
+          const categoryRef = doc(dataBase, 'categories', categoriesId);
+          try {
+            await deleteDoc(categoryRef);
+            console.log('Category deleted successfully!');
+
+            const toast = await toastController.create({
+              message: 'Category deleted successfully!',
+              duration: 2000,
+              color: 'danger',
+              position: 'top',
+            });
+            toast.present();
+
+            fetchCategories(); // Refresh the category list after deletion
+          } catch (error) {
+            console.error('Error deleting category:', error);
+
+            const toast = await toastController.create({
+              message: 'Failed to delete category.',
+              duration: 2000,
+              color: 'danger',
+              position: 'top',
+            });
+            toast.present();
+          }
+        }
+      }
+    ]
+  });
+  await alert.present();
 };
 </script>
 
 <style scoped>
 ion-content {
-  --background: #f9fafc;
+  --background: #f4f7fa;
   font-family: 'Arial', sans-serif;
 }
 
@@ -216,60 +235,39 @@ ion-content {
 }
 
 .search-filter-container {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 20px;
-}
-
-.search-bar {
-  flex: 8; /* 80% */
-}
-
-.filter-icon {
-  flex: 2; /* 20% */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.filter-sort {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .table-container {
-  background-color: #ffffff;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 10px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-.table-header {
-  font-weight: bold;
-}
-
-ion-item {
-  --background-hover: #f5f5f5;
-  border-radius: 10px;
+.category-card {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
 }
 
-ion-icon {
-  color: #666;
-}
-
-ion-label h2 {
+.category-card h2 {
   font-size: 16px;
   font-weight: bold;
   color: #333;
+  margin: 0;
 }
 
-ion-label p {
-  font-size: 14px;
-  color: #666;
+.category-info p {
+  font-size: 12px;
+  color: #555;
+  margin: 5px 0;
+}
+
+ion-buttons ion-button {
+  margin-left: 10px;
 }
 
 .pagination {
@@ -278,12 +276,39 @@ ion-label p {
 }
 
 .pagination span {
-  margin: 0 15px;
   font-size: 14px;
   color: #333;
 }
 
-.table-column {
-  flex: 1;
+ion-button {
+  --border-radius: 8px;
+}
+
+ion-button[fill="outline"] {
+  --border-color: #ccc;
+  --color: #333;
+}
+
+ion-button[fill="outline"]:hover {
+  --background: #f2f2f2;
+}
+
+ion-button[color="success"] {
+  --background: #28a745;
+  --color: white;
+}
+
+ion-button[color="primary"] {
+  --background: #007bff;
+  --color: white;
+}
+
+ion-button[color="danger"] {
+  --background: #dc3545;
+  --color: white;
+}
+.button-group {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

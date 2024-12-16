@@ -3,9 +3,9 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/manage-categories"></ion-back-button>
+          <ion-back-button default-href="/manage-target"></ion-back-button>
         </ion-buttons>
-        <ion-title>Edit Category</ion-title>
+        <ion-title>Edit Donation Target</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -13,18 +13,18 @@
       <div class="form-container">
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Edit Category Information</ion-card-title>
+            <ion-card-title>Edit Donation Target Information</ion-card-title>
           </ion-card-header>
 
           <ion-card-content>
             <form @submit.prevent="submitForm">
-              <!-- Category Name Field -->
+              <!-- Target Name Field -->
               <ion-item class="input-item">
-                <ion-label position="stacked">Category Name</ion-label>
+                <ion-label position="stacked">Target Name</ion-label>
                 <ion-input
                   type="text"
                   v-model="form.name"
-                  placeholder="Enter category name"
+                  placeholder="Enter target name"
                   required
                 ></ion-input>
               </ion-item>
@@ -37,6 +37,16 @@
                   v-model="form.description"
                   placeholder="Enter description"
                   required
+                ></ion-input>
+              </ion-item>
+
+              <!-- Image Link Field -->
+              <ion-item class="input-item">
+                <ion-label position="stacked">Image URL (Optional)</ion-label>
+                <ion-input
+                  type="text"
+                  v-model="form.imageLink"
+                  placeholder="Enter image URL"
                 ></ion-input>
               </ion-item>
 
@@ -81,73 +91,75 @@ import { toastController } from '@ionic/vue'; // Import toastController
 const form = ref({
   name: '',
   description: '',
+  imageLink: '', // Add imageLink field
 });
 
 const router = useRouter();
 const route = useRoute();
 const isSubmitting = ref(false);
 
-// Get the categoryId from the route parameters
-const categoriesId = route.params.categoriesId;
+// Get the targetId from the route parameters
+const targetId = route.params.targetId;
 
-// Fetch the category data when the component is mounted
+// Fetch the donation target data when the component is mounted
 onMounted(async () => {
-  if (categoriesId) {
-    await fetchCategoryData(categoriesId);
+  if (targetId) {
+    await fetchDonationTargetData(targetId);
   }
 });
 
-// Function to fetch category data from Firestore
-const fetchCategoryData = async (categoriesId) => {
+// Function to fetch donation target data from Firestore
+const fetchDonationTargetData = async (targetId) => {
   try {
-    const categoryDocRef = doc(dataBase, "categories", categoriesId); // Assuming the collection is 'categories'
-    const categoryDocSnap = await getDoc(categoryDocRef);
+    const targetDocRef = doc(dataBase, "donation-targets", targetId); // Assuming the collection is 'donation-targets'
+    const targetDocSnap = await getDoc(targetDocRef);
 
-    if (categoryDocSnap.exists()) {
-      const categoryData = categoryDocSnap.data();
-      form.value = { ...categoryData }; // Assuming category data contains name and description
+    if (targetDocSnap.exists()) {
+      const targetData = targetDocSnap.data();
+      form.value = { ...targetData }; // Assuming target data contains name, description, and imageLink
     } else {
-      console.error("No such category found!");
+      console.error("No such target found!");
     }
   } catch (error) {
-    console.error('Error fetching category data:', error);
+    console.error('Error fetching donation target data:', error);
   }
 };
 
-// Function to submit the form and update category data in Firestore
+// Function to submit the form and update donation target data in Firestore
 const submitForm = async () => {
   isSubmitting.value = true;
   try {
-    const categoryDocRef = doc(dataBase, "categories", categoriesId); // Assuming the collection is 'categories'
+    const targetDocRef = doc(dataBase, "donation-targets", targetId); // Assuming the collection is 'donation-targets'
 
     // Update the document in Firestore
-    await updateDoc(categoryDocRef, {
+    await updateDoc(targetDocRef, {
       name: form.value.name,
       description: form.value.description,
+      imageLink: form.value.imageLink || '', // Update the image link if provided
     });
 
     // Fetch the updated data to refresh the form
-    await fetchCategoryData(categoriesId);
+    await fetchDonationTargetData(targetId);
 
     // Show success toast notification
     const toast = await toastController.create({
-      message: 'Category information updated successfully!',
+      message: 'Donation target updated successfully!',
       duration: 2000,
       color: 'secondary',
       position: 'top'
     });
     toast.present();
 
-    // Emit event to notify ManageCategory to refresh
-    router.push('/manage-category').then(() => {
+    // Emit event to notify ManageTarget to refresh
+    router.push('/manage-target').then(() => {
       window.dispatchEvent(new CustomEvent('data-updated'));  // Emit event here
     });
   } catch (error) {
-    console.error('Error updating category data:', error);
+    console.error('Error updating donation target data:', error);
 
     // Show error toast notification
     const toast = await toastController.create({
-      message: 'Failed to update category. Please try again.',
+      message: 'Failed to update donation target. Please try again.',
       duration: 2000,
       color: 'danger',
       position: 'top'
@@ -163,6 +175,7 @@ const resetForm = () => {
   form.value = {
     name: '',
     description: '',
+    imageLink: '', // Reset the image link field
   };
 };
 </script>

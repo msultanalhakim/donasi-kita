@@ -8,12 +8,18 @@
             <ion-icon slot="icon-only" :icon="home"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>Manage Users</ion-title>
+        <ion-title>Manage Donation Targets</ion-title>
       </ion-toolbar>
 
-      <!-- Sub-header for Users List -->
+      <!-- Sub-header for Donation Targets List -->
       <ion-toolbar color="light">
-        <ion-title size="small">Users List Overview</ion-title>
+        <ion-title size="small">Donation Targets List Overview</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="navigateToAddTarget" color="success">
+            <ion-icon slot="start" :icon="add"></ion-icon>
+            Add Donation Target
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -25,32 +31,35 @@
           <ion-searchbar
             v-model="searchQuery"
             debounce="500"
-            placeholder="Search users..."
+            placeholder="Search donation targets..."
             show-clear-button="focus"
           ></ion-searchbar>
         </div>
 
-        <!-- Users List -->
+        <!-- Donation Targets List -->
         <div class="table-container">
           <ion-list>
-            <ion-item v-for="user in paginatedUsers" :key="user.id" lines="inset">
+            <ion-item v-for="target in paginatedTargets" :key="target.id" lines="inset">
               <ion-label>
-                <div class="user-card">
-                  <h2>{{ user.name }}</h2>
-                  <div class="user-info">
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Role:</strong> {{ user.role }}</p>
-                    <p v-if="user.role === 'user'"><strong>Phone:</strong> {{ user.phone || 'N/A' }}</p>
-                    <p v-if="user.role === 'user'"><strong>Address:</strong> {{ user.address || 'N/A' }}</p>
+                <div class="target-card">
+                  <h2>{{ target.name }}</h2>
+                  <div class="target-info">
+                    <p><strong>Description:</strong> {{ target.description }}</p>
+
+                    <!-- Display Image Link -->
+                    <p v-if="target.imageLink">
+                      <strong>Image:</strong>
+                      <img :src="target.imageLink" alt="Donation Target Image" style="max-width: 100%; height: auto; margin-top: 10px;" />
+                    </p>
                   </div>
-                  <!-- <ion-buttons slot="end" class="button-group">
-                    <ion-button color="primary" fill="outline" @click="editUser(user)">
+                  <ion-buttons slot="end" class="button-group">
+                    <ion-button color="primary" fill="outline" @click="editTarget(target)">
                       <ion-icon slot="icon-only" :icon="create" style="font-size: 18px;"></ion-icon>
                     </ion-button>
-                    <ion-button color="danger" fill="outline" @click="deleteUser(user.id)">
+                    <ion-button color="danger" fill="outline" @click="deleteTarget(target.id)">
                       <ion-icon slot="icon-only" :icon="trash" style="font-size: 18px;"></ion-icon>
                     </ion-button>
-                  </ion-buttons> -->
+                  </ion-buttons>
                 </div>
               </ion-label>
             </ion-item>
@@ -87,45 +96,41 @@ import { alertController, toastController } from '@ionic/vue';
 // Router
 const router = useRouter();
 
-// Define the User type
-type User = {
+// Define the Donation Target type
+type DonationTarget = {
   id: string;
   name: string;
-  email: string;
-  role: string;
-  phone?: string;
-  address?: string;
+  description: string;
+  imageLink?: string;  // Optional image link
 };
 
-const users = ref<User[]>([]);
+const targets = ref<DonationTarget[]>([]);
 const itemsPerPage = 5;
 const currentPage = ref(1);
 const searchQuery = ref('');
 
-// Fetch Users
-const fetchUsers = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'users'));
-  users.value = querySnapshot.docs.map(doc => {
+// Fetch Donation Targets
+const fetchTargets = async () => {
+  const querySnapshot = await getDocs(collection(dataBase, 'donation-targets'));
+  targets.value = querySnapshot.docs.map(doc => {
     const data = doc.data();
     return {
       id: doc.id,
-      name: data.name || 'Unnamed User',
-      email: data.email || 'No Email',
-      role: data.role || 'No Role',
-      phone: data.phone || null,
-      address: data.address || null,
-    } as User;
+      name: data.name || 'Unnamed Target',
+      description: data.description || 'No Description',
+      imageLink: data.imageLink || '', // Optional field for image link
+    } as DonationTarget;
   });
 };
 
-// Call fetchUsers on component mount
+// Call fetchTargets on component mount
 onMounted(() => {
-  fetchUsers();
+  fetchTargets();
 });
 
 // Listen for the custom data-updated event
 const refreshData = () => {
-  fetchUsers();
+  fetchTargets();
 };
 
 onMounted(() => {
@@ -136,23 +141,22 @@ onBeforeUnmount(() => {
   window.removeEventListener('data-updated', refreshData);
 });
 
-// Search Users
-const filteredUsers = computed(() => {
+// Search Donation Targets
+const filteredTargets = computed(() => {
   const searchLower = searchQuery.value.toLowerCase();
-  return users.value.filter(user =>
-    (user.name || '').toLowerCase().includes(searchLower) ||
-    (user.email || '').toLowerCase().includes(searchLower) ||
-    (user.role || '').toLowerCase().includes(searchLower)
+  return targets.value.filter(target =>
+    (target.name || '').toLowerCase().includes(searchLower) ||
+    (target.description || '').toLowerCase().includes(searchLower)
   );
 });
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredUsers.value.length / itemsPerPage));
+const totalPages = computed(() => Math.ceil(filteredTargets.value.length / itemsPerPage));
 
-const paginatedUsers = computed(() => {
+const paginatedTargets = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  return filteredUsers.value.slice(start, end);
+  return filteredTargets.value.slice(start, end);
 });
 
 const previousPage = () => {
@@ -167,15 +171,15 @@ const nextPage = () => {
   }
 };
 
-// Edit User
-const editUser = (user: User) => {
-  router.push({ name: 'ManageUserEdit', params: { userId: user.id } });
+// Edit Donation Target
+const editTarget = (target: DonationTarget) => {
+  router.push({ name: 'ManageTargetEdit', params: { targetId: target.id } });
 };
 
-const deleteUser = async (userId: string) => {
+const deleteTarget = async (targetId: string) => {
   const alert = await alertController.create({
     header: 'Confirm Delete',
-    message: 'Are you sure you want to delete this user?',
+    message: 'Are you sure you want to delete this donation target?',
     buttons: [
       {
         text: 'Cancel',
@@ -187,27 +191,27 @@ const deleteUser = async (userId: string) => {
       {
         text: 'Yes',
         handler: async () => {
-          const userRef = doc(dataBase, 'users', userId);
+          const targetRef = doc(dataBase, 'donation-targets', targetId);
           try {
-            await deleteDoc(userRef);
-            console.log('User deleted successfully!');
-            
+            await deleteDoc(targetRef);
+            console.log('Donation target deleted successfully!');
+
             // Show success toast notification
             const toast = await toastController.create({
-              message: 'User deleted successfully!',
+              message: 'Donation target deleted successfully!',
               duration: 2000,
               color: 'danger',
               position: 'top'
             });
             toast.present();
 
-            fetchUsers(); // Refresh the list of users after deletion
+            fetchTargets(); // Refresh the list of targets after deletion
           } catch (error) {
-            console.error('Error deleting user:', error);
+            console.error('Error deleting donation target:', error);
 
             // Show error toast notification
             const toast = await toastController.create({
-              message: 'Error deleting user. Please try again.',
+              message: 'Error deleting donation target. Please try again.',
               duration: 2000,
               color: 'secondary'
             });
@@ -222,7 +226,7 @@ const deleteUser = async (userId: string) => {
 
 // Navigation helpers
 const navigateToDashboard = () => router.push('/dashboard');
-const navigateToAddUser = () => router.push('/manage-user/add');
+const navigateToAddTarget = () => router.push('/manage-target/add');
 </script>
 
 <style scoped>
@@ -233,6 +237,11 @@ ion-content {
 
 .crud-container {
   padding: 20px;
+}
+
+.header-actions {
+  margin-bottom: 25px;
+  text-align: center;
 }
 
 .search-filter-container {
@@ -246,7 +255,7 @@ ion-content {
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-.user-card {
+.target-card {
   padding: 5px;
   background-color: #f9f9f9;
   border-radius: 10px;
@@ -254,22 +263,20 @@ ion-content {
   margin-bottom: 5px;
 }
 
-.user-card h2 {
+.target-card h2 {
   font-size: 14px;
   font-weight: bold;
   margin: 0;
   color: #333;
-  margin: 10px;
 }
 
-.user-info p {
+.target-info p {
   margin: 8px 0;
   color: #555;
   font-size: 12px;
-  margin: 10px;
 }
 
-.user-info {
+.target-info {
   margin-top: 10px;
 }
 
@@ -284,15 +291,21 @@ ion-buttons ion-button {
 }
 
 .pagination span {
-  margin: 0 15px;
-  font-size: 14px;
-  color: #4f4f4f;
+  margin: 0 10px;
+  font-size: 16px;
 }
 
 .custom-pagination-button {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
+  --size: 30px;
+}
+
+.pagination ion-button[disabled] {
+  opacity: 0.5;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }
 .button-group {
   display: flex;

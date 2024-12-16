@@ -64,6 +64,8 @@ import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/zoom';
 import '@ionic/vue/css/ionic-swiper.css';
+import '@ionic/core/css/ionic.bundle.css';
+
 
 /* Theme variables */
 import './theme/variables.css';
