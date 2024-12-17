@@ -13,7 +13,7 @@
         <div class="hero-section">
           <div class="profile-details">
             <img
-              src="/src/components/images/user.png"
+              src="/assets/images/user.jpg"
               alt="Profile Picture"
               class="profile-picture"
             />
@@ -52,7 +52,6 @@
           :centered-slides="true"
           :loop="false"
           class="special-swiper"
-          @slideChange="onSlideChange"
         >
           <swiper-slide
             v-for="(target, index) in targets"
@@ -76,7 +75,7 @@
             :key="'indicator-' + index"
             class="swiper-dot"
             :class="{ active: currentSlide === index }"
-            @click="goToSlide(index)"
+            
           ></span>
         </div>
       </div>
@@ -84,7 +83,7 @@
       <!-- Category Section -->
       <div class="category-section">
         <div class="category-header">
-          <h2>Jelajahi Kategori</h2>
+          <h2>Jelajahi Menu</h2>
           <ion-button fill="clear" class="see-all-button" @click="toggleSeeAll">
             See All
           </ion-button>
@@ -95,9 +94,11 @@
             :key="index"
             class="category-card"
           >
-            <div class="icon-container">
-              <ion-icon :icon="category.icon" class="category-icon"></ion-icon>
-            </div>
+            <button @click="router.push(category.link)">
+              <div class="icon-container">
+                <ion-icon :icon="category.icon" class="category-icon"></ion-icon>
+              </div>
+            </button>
             <span class="category-name">{{ category.name }}</span>
           </div>
         </div>
@@ -157,7 +158,8 @@ import {
   settings,
   heart,
   newspaper,
-  clipboard,
+  document,
+  home
 } from "ionicons/icons";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { dataBase } from "@/firebase";
@@ -186,9 +188,10 @@ const targets = ref<any[]>([]);
 const articles = ref<Article[]>([]);
 const currentSlide = ref(0);
 const categories = [
-  { name: "Donasi", icon: heart },
-  { name: "Artikel", icon: newspaper },
-  { name: "Laporan", icon: clipboard },
+  { name: "Artikel", icon: newspaper, link: "/artikel" },
+  { name: "Donasi", icon: heart, link: "/form-donasi" },
+  { name: "Penerima", icon: home, link: "/target" },
+  { name: "Riwayat", icon: document, link: "/riwayat-donasi" },
 ];
 const visibleCategories = ref(categories.slice(0, 4));
 const showAll = ref(false);
@@ -245,16 +248,16 @@ onMounted(async () => {
   loading.value = false;
 });
 
-// Swiper Controls
-const onSlideChange = (swiper: any) => {
-  currentSlide.value = swiper.realIndex;
-};
-const goToSlide = (index: number) => {
-  const swiperInstance = (document.querySelector(".special-swiper") as HTMLElement & {
-    swiper: any;
-  })?.swiper;
-  swiperInstance?.slideToLoop(index);
-};
+// // Swiper Controls
+// const onSlideChange = (swiper: any) => {
+//   currentSlide.value = swiper.realIndex;
+// };
+// const goToSlide = (index: number) => {
+//   const swiperInstance = (document.querySelector(".special-swiper") as HTMLElement & {
+//     swiper: any;
+//   })?.swiper;
+//   swiperInstance?.slideToLoop(index);
+// };
 
 // Toggle Category Visibility
 const toggleSeeAll = () => {
@@ -409,8 +412,8 @@ ion-content {
 }
 
 .offer-image {
-  width: 100%;
-  height: 180px;
+  width: 100% !important;
+  height: 280px !important;
   object-fit: cover;
 }
 
@@ -433,7 +436,6 @@ ion-card-content {
 .swiper-navigation {
   display: flex;
   justify-content: center;
-  margin-top: -6px;
   gap: 10px;
 }
 
@@ -473,7 +475,7 @@ ion-card-content {
 .category-grid {
   padding: 4px 0;
   display: flex;
-  /* justify-content: space-between; */
+  justify-content: center;
   padding-left: 15px;
   flex-wrap: wrap; /* Allow items to wrap into the next row */
   gap: 40px; /* Add gap between items */
@@ -517,15 +519,14 @@ ion-card-content {
 
 /* Artikel Section Styling */
 .article-section {
-  padding: 20px 5px 0;
+  padding: 8px 26px;
 }
 
 .article-section h2 {
   font-size: 20px;
   color: #333;
   font-weight: bold;
-  margin: 0;
-  padding: 20px;
+  padding: 0 0 10px;
 }
 
 .article-flex-container {
@@ -577,12 +578,10 @@ ion-card-content {
   --background: #85a98f;
   transition: background-color 0.5s ease-in-out;
   --color: #fff;
-  font-size: 10px;
+  --border-radius:18px;
+  font-size: 12px;
   font-weight: 600;
-  border-radius: 8px;
-  width: 40%;
-  padding-bottom: 20px;
-  margin: 0 auto;
+  padding: 10px 60px;
   display: block;
 }
 
