@@ -20,7 +20,7 @@ const user = ref("");
 
 // Menentukan halaman mana yang harus menampilkan Bottombar
 const showTabs = computed(() => {
-  const visibleRoutes = ["Home", "Beranda", "Pengaturan", "Berita", "Profile"];
+  const visibleRoutes = ["Home", "Beranda", "Pengaturan", "Artikel", "Profile"];
   return route.name && visibleRoutes.includes(route.name as string);
 });
 

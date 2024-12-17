@@ -101,12 +101,6 @@ const donasiId = route.params.donasiId;
 const loading = ref(true);
 // Data dummy untuk detail donasi
 const donationDetails = ref({});
-// penerima: "Penerima A",
-// barang: "Buku",
-// jumlah: 5,
-// pesan: "Semoga bermanfaat!",
-// tanggal: new Date().toISOString().split("T")[0],
-// jam: new Date().toISOString().split("T")[1].slice(0, 5),
 
 const fetchDonation = async () => {
   try {

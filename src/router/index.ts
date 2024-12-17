@@ -14,9 +14,11 @@ import DonasiPage from "@/views/DonasiPage.vue";
 import DonasiForm from "@/views/DonasiForm.vue";
 import ProfilePage from "@/views/ProfilePage.vue";
 import HistoryPage from "@/views/HistoryPage.vue";
-import BeritaPage from "@/views/BeritaPage.vue";
+import ArticlePage from "@/views/ArticlePage.vue";
 import PengaturanPage from "@/views/PengaturanPage.vue";
 import DetailDonasiPage from "@/views/DetailDonasiPage.vue";
+import DetailArticlePage from "@/views/DetailArticlePage.vue";
+
 
 // Admin Views
 import DashboardPage from "@/views/admin/DashboardPage.vue";
@@ -120,9 +122,14 @@ const routes: Array<RouteRecordRaw> = [
   },
 
   {
-    path: "/berita",
-    name: "Berita",
-    component: BeritaPage,
+    path: "/artikel",
+    name: "Artikel",
+    component: ArticlePage,
+  },
+  {
+    path: "/detail-artikel/:artikelId",
+    name: "Detail Artikel",
+    component: DetailArticlePage,
   },
   {
     path: "/pengaturan",

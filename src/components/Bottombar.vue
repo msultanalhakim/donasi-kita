@@ -25,9 +25,9 @@
         <ion-label class="tab-label">Wishlist</ion-label>
       </ion-tab-button> -->
 
-      <ion-tab-button tab="Berita" href="/berita">
+      <ion-tab-button tab="Artikel" href="/artikel">
         <ion-icon :icon="paperPlane" class="tab-icon"></ion-icon>
-        <ion-label class="tab-label">Berita</ion-label>
+        <ion-label class="tab-label">Artikel</ion-label>
       </ion-tab-button>
 
       <ion-tab-button tab="Profile" href="/profile">
