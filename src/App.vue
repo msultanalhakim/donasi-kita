@@ -37,27 +37,27 @@ onMounted(async () => {
   user.value = authStore.currentUser;
   console.log("Info user", user.value);
 
-  // // Cek jika pengguna belum login, alihkan ke login
-  // if (!authStore.isAuthenticated()) {
-  //   if (["Login", "Register"].includes(route.name as string)) {
-  //     return; // Biarkan pengguna tetap di halaman login/register
-  //   }
-  //   alert("Anda melakukan hal ilegal");
-  //   router.replace("/login"); // Arahkan ke login jika belum login
-  // }
+  // Cek jika pengguna belum login, alihkan ke login
+  if (!authStore.isAuthenticated()) {
+    if (["Login", "Register"].includes(route.name as string)) {
+      return; // Biarkan pengguna tetap di halaman login/register
+    }
+    alert("Anda melakukan hal ilegal");
+    router.replace("/login"); // Arahkan ke login jika belum login
+  }
 });
 
 watch([() => authStore.currentUser, () => route.name], ([x, y]) => {
-  // if (x && guestRoute.includes(y as string)) {
-  //   router.replace("/home"); // Arahkan ke Home jika sudah login
-  // }
-  // // Jika pengguna bukan admin dan mencoba akses halaman admin
-  // if (
-  //   adminRoute.includes(y as string) &&
-  //   (!x || (x.role !== "Administrator" && x.role !== "Admin"))
-  // ) {
-  //   router.replace("/home");
-  //   alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
-  // }
+  if (x && guestRoute.includes(y as string)) {
+    router.replace("/home"); // Arahkan ke Home jika sudah login
+  }
+  // Jika pengguna bukan admin dan mencoba akses halaman admin
+  if (
+    adminRoute.includes(y as string) &&
+    (!x || (x.role !== "Administrator" && x.role !== "Admin"))
+  ) {
+    router.replace("/home");
+    alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+  }
 });
 </script>
