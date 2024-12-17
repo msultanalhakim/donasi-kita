@@ -48,7 +48,7 @@
 
           <!-- Kategori Donasi -->
           <ion-item class="form-input">
-            <ion-label position="stacked">Penerima Donasi</ion-label>
+            <ion-label position="stacked">Kategori Barang</ion-label>
             <ion-select
               interface="popover"
               v-model="donationDetails.kategori"
@@ -60,21 +60,6 @@
                 :value="kategori.name"
               >
                 {{ kategori.name }}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <!-- Tipe Pengiriman -->
-          <ion-item class="form-input">
-            <ion-label position="stacked">Metode Pengiriman</ion-label>
-            <ion-select
-              interface="alert"
-              v-model="donationDetails.metodePengiriman"
-              placeholder="Pilih Kategori Barang"
-            >
-              <ion-select-option value="Antar Sendiri"> Antar Sendiri </ion-select-option>
-              <ion-select-option value="Pengiriman">
-                Pengambilan dari Pihak Kita
               </ion-select-option>
             </ion-select>
           </ion-item>
@@ -93,12 +78,16 @@
           <!-- Jumlah Barang -->
           <ion-item class="form-input">
             <ion-label position="stacked">Jumlah Barang</ion-label>
-            <ion-textarea
+            <ion-input
+              type="text"
+              @input="validateInput"
               v-model="donationDetails.jumlah"
               placeholder="Barang yang didonasikan"
-              @ionInput="(e) => (donationDetails.jumlah = e.target.value)"
               required
-            ></ion-textarea>
+            ></ion-input>
+            <ion-text v-if="errorMessage" color="danger" class="warning-text">
+              {{ errorMessage }}
+            </ion-text>
           </ion-item>
 
           <!-- Pesan Opsional -->
@@ -167,7 +156,6 @@ const fetchDonationTargets = async () => {
 
 // Data donasi
 const donationDetails = ref({
-  metodePengiriman: "",
   kategori: "",
   penerima: "",
   alamat: "",
@@ -183,8 +171,7 @@ const submitDonation = async () => {
     !donationDetails.value.penerima ||
     !donationDetails.value.barang ||
     !donationDetails.value.jumlah ||
-    !donationDetails.value.kategori ||
-    !donationDetails.value.metodePengiriman
+    !donationDetails.value.kategori
   ) {
     alert("Harap isi semua form.");
     return;
@@ -201,7 +188,6 @@ const submitDonation = async () => {
         id: now.toISOString(),
         status: false,
         kategori: donationDetails.value.kategori,
-        metodePengiriman: donationDetails.value.metodePengiriman,
         pemberi: user.value.name,
         email: user.value.email,
         penerima: donationDetails.value.penerima,
@@ -214,7 +200,7 @@ const submitDonation = async () => {
       loading.value = false;
 
       alert("Donasi Anda berhasil dikirim!");
-      router.push("/riwayat");
+      router.push("/riwayat-donasi");
 
       donationDetails.value = {
         penerima: "",
@@ -228,6 +214,20 @@ const submitDonation = async () => {
     alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
   }
 };
+
+const errorMessage = ref(""); // Untuk menyimpan pesan error
+const validateInput = () => {
+  const input = donationDetails.value.jumlah;
+
+  // Cek apakah input hanya berisi angka
+  if (!/^\d*$/.test(input)) {
+    errorMessage.value = "Jumlah harus berupa angka!";
+    donationDetails.value.jumlah = input.replace(/\D/g, ""); // Hapus karakter non-angka
+  } else {
+    errorMessage.value = ""; // Bersihkan pesan error jika input valid
+  }
+};
+
 onMounted(async () => {
   await authStore.loadUserFromLocalStorage();
   user.value = authStore.currentUser;
@@ -364,5 +364,10 @@ ion-content {
   to {
     transform: rotate(360deg);
   }
+}
+
+.warning-text {
+  font-size: 14px;
+  margin-top: 5px;
 }
 </style>

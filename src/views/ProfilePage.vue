@@ -24,11 +24,15 @@
       <!-- Menu Section -->
       <div class="menu-section">
         <ion-list>
-          <ion-item button @click="() => router.push('/dashboard')">
+          <ion-item
+            v-if="user.role == Administrator"
+            button
+            @click="() => router.push('/dashboard')"
+          >
             <ion-icon :icon="optionsOutline" slot="start"></ion-icon>
             <ion-label>Dashboard</ion-label>
           </ion-item>
-          <ion-item button>
+          <ion-item button @click="router.push('/riwayat-donasi')">
             <ion-icon :icon="timeOutline" slot="start"></ion-icon>
             <ion-label>Donation History</ion-label>
           </ion-item>
