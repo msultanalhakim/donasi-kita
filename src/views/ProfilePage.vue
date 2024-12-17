@@ -24,10 +24,21 @@
       <!-- Menu Section -->
       <div class="menu-section">
         <ion-list>
-
-          <ion-item button @click="navigateTo('/settingUser')">
+          <ion-item button @click="() => router.push('/dashboard')">
+            <ion-icon :icon="optionsOutline" slot="start"></ion-icon>
+            <ion-label>Dashboard</ion-label>
+          </ion-item>
+          <ion-item button>
+            <ion-icon :icon="timeOutline" slot="start"></ion-icon>
+            <ion-label>Donation History</ion-label>
+          </ion-item>
+          <ion-item button>
             <ion-icon :icon="settingsOutline" slot="start"></ion-icon>
             <ion-label>Settings</ion-label>
+          </ion-item>
+          <ion-item button>
+            <ion-icon :icon="helpCircleOutline" slot="start"></ion-icon>
+            <ion-label>Help & Support</ion-label>
           </ion-item>
           <ion-item button @click="handleLogout">
             <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
@@ -72,10 +83,6 @@ onMounted(async () => {
     loading.value = false;
   }
 });
-// Navigate to different pages
-const navigateTo = (path: string) => {
-  router.push(path);
-};
 </script>
 
 <style scoped>

@@ -48,16 +48,16 @@ onMounted(async () => {
 });
 
 watch([() => authStore.currentUser, () => route.name], ([x, y]) => {
-  // if (x && guestRoute.includes(y as string)) {
-  //   router.replace("/home"); // Arahkan ke Home jika sudah login
-  // }
-  // // Jika pengguna bukan admin dan mencoba akses halaman admin
-  // if (
-  //   adminRoute.includes(y as string) &&
-  //   (!x || (x.role !== "Administrator" && x.role !== "Admin"))
-  // ) {
-  //   router.replace("/home");
-  //   alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
-  // }
+  if (x && guestRoute.includes(y as string)) {
+    router.replace("/home"); // Arahkan ke Home jika sudah login
+  }
+  // Jika pengguna bukan admin dan mencoba akses halaman admin
+  if (
+    adminRoute.includes(y as string) &&
+    (!x || (x.role !== "Administrator" && x.role !== "Admin"))
+  ) {
+    router.replace("/home");
+    alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+  }
 });
 </script>

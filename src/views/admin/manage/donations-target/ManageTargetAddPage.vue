@@ -47,7 +47,7 @@
 
             <!-- Buttons -->
             <div class="button-group">
-              <ion-button expand="block" color="primary" @click="addTarget">
+              <ion-button expand="block" color="primary" @click="addTarget" :disabled="isSubmitting">
                 Add Target
               </ion-button>
               <ion-button expand="block" color="medium" @click="goBack">
@@ -75,6 +75,7 @@ const router = useRouter();
 const targetName = ref('');
 const description = ref('');
 const imageLink = ref(''); // New field for image URL
+const isSubmitting = ref(false); // To manage button state
 
 // Function to Add Target
 const addTarget = async () => {
@@ -82,6 +83,8 @@ const addTarget = async () => {
     alert('Target name is required!');
     return;
   }
+
+  isSubmitting.value = true;
 
   try {
     await addDoc(collection(dataBase, 'donation-targets'), {
@@ -114,6 +117,8 @@ const addTarget = async () => {
       position: 'top',
     });
     toast.present();
+  } finally {
+    isSubmitting.value = false;
   }
 };
 

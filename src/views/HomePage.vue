@@ -64,7 +64,7 @@
               <ion-card-header>
                 <ion-card-title>{{ target.name }}</ion-card-title>
               </ion-card-header>
-              <ion-card-content>{{ target.description }}</ion-card-content>
+              <ion-card-content class="offer-description">{{ limitDescription(target.description) }}</ion-card-content>
             </ion-card>
           </swiper-slide>
         </swiper>
@@ -210,6 +210,12 @@ const fetchArticles = async () => {
       imageLink: data.imageLink || "",
     } as Article;
   });
+};
+
+// Function to limit description to 30 words
+const limitDescription = (description: string) => {
+  const words = description.split(' ');
+  return words.length > 20 ? words.slice(0, 20).join(' ') + '...' : description;
 };
 
 const authStore = useAuthStore();
@@ -378,6 +384,11 @@ ion-content {
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.offer-description {
+  text-align: justify;
+  text-align-last: center;
 }
 
 .offer-image {
