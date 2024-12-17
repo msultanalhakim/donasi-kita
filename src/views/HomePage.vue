@@ -18,8 +18,8 @@
               class="profile-picture"
             />
             <div class="profile-text">
-              <p class="greeting">Welcome back,</p>
-              <h2 class="user-name">{{ user.name }}</h2>
+              <p class="greeting">Selamat Datang,</p>
+              <h2 class="user-name">Muhammad Levi Asshidiqi</h2>
             </div>
           </div>
           <ion-button fill="clear" class="settings-button">
@@ -39,56 +39,59 @@
       </div>
 
       <!-- Special Offers Section -->
-      <div class="special-offers">
-        <!-- Section Header -->
-        <div class="special-header">
-          <h2>Donation Recommendation</h2>
-          <!-- <ion-button fill="clear" class="see-all-button">See All</ion-button> -->
-        </div>
+  <div class="special-offers">
+    <!-- Section Header -->
+    <div class="special-header">
+      <h2>Rekomendasi Donasi</h2>
+    </div>
 
-        <!-- Swiper Section -->
-        <swiper
-          :space-between="20"
-          :slides-per-view="1"
-          :centered-slides="true"
-          :loop="false"
-          class="special-swiper"
-          @slideChange="onSlideChange"
-        >
-          <swiper-slide v-for="(offer, index) in offers" :key="index" class="offer-slide">
-            <ion-card class="offer-card">
-              <img :src="offer.image" alt="Offer Image" class="offer-image" />
-              <ion-card-header>
-                <ion-card-title>{{ offer.title }}</ion-card-title>
-              </ion-card-header>
-              <ion-card-content>{{ offer.description }}</ion-card-content>
-            </ion-card>
-          </swiper-slide>
-        </swiper>
+    <!-- Swiper Section -->
+    <swiper
+      :space-between="20"
+      :slides-per-view="1"
+      :centered-slides="true"
+      :loop="false"
+      class="special-swiper"
+      @slideChange="onSlideChange"
+    >
+      <swiper-slide
+        v-for="(target, index) in targets"
+        :key="index"
+        class="offer-slide"
+      >
+        <ion-card class="offer-card">
+          <img :src="target.imageLink" alt="Target Image" class="offer-image" />
+          <ion-card-header>
+            <ion-card-title>{{ target.name }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>{{ target.description }}</ion-card-content>
+        </ion-card>
+      </swiper-slide>
+    </swiper>
 
-        <!-- Navigation Indicators -->
-        <div class="swiper-navigation">
-          <span
-            v-for="(offer, index) in offers"
-            :key="'indicator-' + index"
-            class="swiper-dot"
-            :class="{ active: currentSlide === index }"
-            @click="goToSlide(index)"
-          ></span>
-        </div>
-      </div>
+    <!-- Navigation Indicators -->
+    <div class="swiper-navigation">
+      <span
+        v-for="(target, index) in targets"
+        :key="'indicator-' + index"
+        class="swiper-dot"
+        :class="{ active: currentSlide === index }"
+        @click="goToSlide(index)"
+      ></span>
+    </div>
+  </div>
 
-      <!-- Category Section -->
-      <div class="category-section">
+       <!-- Category Section -->
+       <div class="category-section">
         <div class="category-header">
-          <h2>Explore Categories</h2>
+          <h2>Jelajahi Kategori</h2>
           <ion-button fill="clear" class="see-all-button" @click="toggleSeeAll">
             See All
           </ion-button>
         </div>
         <div class="category-grid">
           <div
-            v-for="(category, index) in categories"
+            v-for="(category, index) in visibleCategories"
             :key="index"
             class="category-card"
           >
@@ -100,182 +103,147 @@
         </div>
       </div>
 
-      <!-- How It Works Section -->
-      <div class="how-it-works">
-        <h2>How It Works</h2>
-        <div class="steps-container">
-          <div class="step">
-            <ion-icon :icon="notifications" class="step-icon"></ion-icon>
-            <p>Select the item you wish to donate from your collection.</p>
+      <!-- Artikel Section -->
+      <div class="article-section">
+        <h2>Artikel Terbaru</h2>
+
+        <!-- List Artikel -->
+        <div
+          v-for="(article, index) in articles"
+          :key="index"
+          class="article-item"
+        >
+          <div class="article-flex-container">
+            <img :src="article.imageLink" alt="Article Image" class="article-image" />
+            <div class="article-text">
+              <h3 class="article-title">{{ article.title }}</h3>
+              <p class="article-content">{{ article.description }}</p>
+            </div>
           </div>
-          <div class="step">
-            <ion-icon :icon="location" class="step-icon"></ion-icon>
-            <p>
-              Choose a time for the pickup or drop-off at a nearby location.
-            </p>
-          </div>
-          <div class="step">
-            <ion-icon :icon="cube" class="step-icon"></ion-icon>
-            <p>
-              Your items are delivered to those in need, creating a real impact!
-            </p>
-          </div>
+          <hr class="article-divider" />
+        </div>
+
+        <!-- Tombol Baca Selengkapnya -->
+        <div class="read-more-container">
+          <ion-button class="read-more-button" expand="block" @click="goToArticles">
+            Baca Selengkapnya
+          </ion-button>
         </div>
       </div>
+
+      <!-- Footer Section -->
+<footer>
+  <div class="footer-container">
+    <p class="copyright-text">
+      © 2024 Donasi Kita. All Rights Reserved.
+    </p>
+    <!-- <p class="footer-credits">
+      Created by <a href="https://example.com" target="_blank">Donasi-kita</a>
+    </p> -->
+  </div>
+</footer>
+      
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, onMounted } from "vue";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/css";
 import {
   settingsOutline,
-  personOutline,
-  addOutline,
-  gridOutline,
-  homeOutline,
   searchOutline,
-  notificationsOutline,
-  locationOutline,
-  location,
-  notifications,
-  cube,
   settings,
-  bicycle,
-  book,
-  bag,
-  gameController,
-  phonePortrait,
-  shirt,
-  logoFacebook,
-  logoInstagram,
-  logoTwitter,
-  cubeOutline,
   heart,
   newspaper,
   clipboard,
 } from "ionicons/icons";
-import router from "@/router";
-import { useAuthStore } from "@/authStore";
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { dataBase } from "@/firebase";
 
-const authStore = useAuthStore();
-const loading = ref(true); // Status loading
-const user = ref("");
-// Mock data for offers
-const offers = [
-  {
-    title: "Limited Time Offer",
-    description: "Get up to 50% off on cleaning services.",
-    image: "/assets/images/login-illustration.png",
-  },
-  {
-    title: "Repair Discount",
-    description: "Save 30% on repairing services for a week.",
-    image: "/assets/images/login-illustration.png",
-  },
-  {
-    title: "Exclusive Package",
-    description: "Avail a combo offer for your home services!",
-    image: "/assets/images/login-illustration.png",
-  },
-  {
-    title: "Free Service Day",
-    description: "Enjoy free services on our special day!",
-    image: "/assets/images/login-illustration.png",
-  },
-];
-
-const articles = ref([
-  {
-    title: "Meningkatkan Literasi di Indonesia",
-    content: "Literasi menjadi kunci kemajuan bangsa. Program-program literasi...",
-    image: "/assets/images/literasi.jpg", // Gambar pertama
-  },
-  {
-    title: "Pengaruh Teknologi pada Pendidikan",
-    content: "Teknologi membawa banyak perubahan dalam cara kita belajar...",
-    image: "/assets/images/teknologi.jpg", // Gambar kedua
-  },
-  {
-    title: "Tips Donasi Efektif",
-    content: "Agar donasi tepat sasaran, ada beberapa tips penting yang perlu...",
-    image: "/assets/images/donasi.jpg", // Gambar ketiga
-  },
-]);
-
-// Fungsi untuk navigasi ke halaman artikel penuh
-const goToArticles = () => {
-  router.push("/all-articles");
+// Define the Donation Target type
+type DonationTarget = {
+  id: string;
+  name: string;
+  description: string;
+  imageLink?: string;  // Optional image link
+};
+// Define the Article type
+type Article = {
+  id: string;
+  title: string;
+  description: string;
+  imageLink?: string;
 };
 
-// Mock data untuk kategori yang telah diperbarui
+// State Variables
+const loading = ref(true);
+const targets = ref<any[]>([]);
+const articles = ref<Article[]>([]);
+const currentSlide = ref(0);
 const categories = [
   { name: "Donasi", icon: heart },
-  { name: "Article", icon: newspaper },
+  { name: "Artikel", icon: newspaper },
   { name: "Laporan", icon: clipboard },
+  
 ];
+const visibleCategories = ref(categories.slice(0, 4));
+const showAll = ref(false);
 
-// Fungsi untuk mendapatkan route berdasarkan nama kategori
-const getCategoryRoute = (categoryName: string) => {
-  switch (categoryName) {
-    case "Article":
-      return "/article";
-    case "Target Donasi":
-      return "/donation-target";
-    case "History":
-      return "/history";
-    default:
-      return "/";
-  }
+// Fetch Donation Targets
+const fetchTargets = async () => {
+  const querySnapshot = await getDocs(collection(dataBase, 'donation-targets'));
+  targets.value = querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name || 'Unnamed Target',
+      description: data.description || 'No Description',
+      imageLink: data.imageLink || '', // Optional field for image link
+    } as DonationTarget;
+  });
 };
 
 
-// State for Swiper
-const currentSlide = ref(0);
+// Fetch Articles
+const fetchArticles = async () => {
+  const querySnapshot = await getDocs(collection(dataBase, 'articles'));
+  articles.value = querySnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      title: data.title || 'Untitled Article',
+      description: data.description || 'No Description',
+      imageLink: data.imageLink || '',
+    } as Article;
+  });
+};
 
-// Swiper navigation methods
+onMounted(async () => {
+  await fetchTargets();
+  await fetchArticles();
+  loading.value = false; // Matikan loading setelah kedua data selesai dimuat
+});
+
+
+// Swiper Controls
 const onSlideChange = (swiper: any) => {
   currentSlide.value = swiper.realIndex;
 };
-
 const goToSlide = (index: number) => {
-  const swiperInstance = (document.querySelector(".special-swiper") as HTMLElement & {
-    swiper: any;
-  })?.swiper;
+  const swiperInstance = (
+    document.querySelector(".special-swiper") as HTMLElement & { swiper: any }
+  )?.swiper;
   swiperInstance?.slideToLoop(index);
 };
 
-// Mock data for disaster news
-const disasterNews = ref([
-  {
-    title: "Donate Clothes to the Needy",
-    image: "/assets/images/login-illustration.png",
-    description:
-      "Clothing donations are needed urgently in the local community.",
-  },
-  {
-    title: "Donate Electronics to Empower",
-    image: "/assets/images/login-illustration.png",
-    description:
-      "Your old electronics can change lives by providing access to technology.",
-  },
-]);
+// Toggle Category Visibility
+const toggleSeeAll = () => {
+  showAll.value = !showAll.value;
+  visibleCategories.value = showAll.value ? categories : categories.slice(0, 4);
+};
 
-// Mock data for success stories
-const successStories = ref([
-  {
-    title: "The Impact of Donated Clothes",
-    image: "/assets/images/login-illustration.png",
-    testimonial:
-      "Thanks to your generous clothing donations, many families have been able to stay warm this winter.",
-  },
-  {
-    title: "A New Life Through Electronics",
-    image: "/assets/images/login-illustration.png",
-    testimonial:
-      "Donating your old devices helped students excel in their online classes during the pandemic.",
-  },
-]);
 </script>
 
 <style scoped>
@@ -561,5 +529,56 @@ ion-card-content {
   font-size: 15px;
   font-weight: bold;
   color: #333;
+  margin-bottom: 8px;
+}
+
+.article-content {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.article-divider {
+  border: none;
+  height: 1px;
+  background-color: #ccc;
+  margin: 15px 0;
+}
+
+.read-more-container {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.read-more-button {
+  --background: #85a98f;
+  --background-hover: #5a6c57;
+  --color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 8px;
+  width: 40%;
+  padding-bottom: 20px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Footer Section Styles */
+footer {
+  /* background-color: #f8f9fa; Warna latar footer */
+  color: #6c757d; /* Warna teks */
+  text-align: center; /* Pusatkan teks */
+  padding: 20px 10px; /* Jarak padding atas-bawah dan kiri-kanan */
+  font-size: 14px; /* Ukuran font */
+  border-top: 1px solid #e7e7e7; /* Garis pemisah atas footer */
+}
+
+.footer-container p {
+  margin: 5px 0; /* Spasi antar paragraf */
+}
+
+.footer-container a {
+  text-decoration: none; /* Hilangkan garis bawah tautan */
+  color: #007bff; /* Warna biru khas tautan */
 }
 </style>
