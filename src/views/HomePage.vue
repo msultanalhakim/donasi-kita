@@ -91,7 +91,7 @@
         </div>
         <div class="category-grid">
           <div
-            v-for="(category, index) in visibleCategories"
+            v-for="(category, index) in categories"
             :key="index"
             class="category-card"
           >
@@ -103,31 +103,26 @@
         </div>
       </div>
 
-      <!-- Artikel Section -->
-      <div class="article-section">
-        <h2>Artikel Terbaru</h2>
-
-        <!-- List Artikel -->
-        <div
-          v-for="(article, index) in articles"
-          :key="index"
-          class="article-item"
-        >
-          <div class="article-flex-container">
-            <img :src="article.imageLink" alt="Article Image" class="article-image" />
-            <div class="article-text">
-              <h3 class="article-title">{{ article.title }}</h3>
-              <p class="article-content">{{ article.description }}</p>
-            </div>
+      <!-- How It Works Section -->
+      <div class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+          <div class="step">
+            <ion-icon :icon="notifications" class="step-icon"></ion-icon>
+            <p>Select the item you wish to donate from your collection.</p>
           </div>
-          <hr class="article-divider" />
-        </div>
-
-        <!-- Tombol Baca Selengkapnya -->
-        <div class="read-more-container">
-          <ion-button class="read-more-button" expand="block" @click="goToArticles">
-            Baca Selengkapnya
-          </ion-button>
+          <div class="step">
+            <ion-icon :icon="location" class="step-icon"></ion-icon>
+            <p>
+              Choose a time for the pickup or drop-off at a nearby location.
+            </p>
+          </div>
+          <div class="step">
+            <ion-icon :icon="cube" class="step-icon"></ion-icon>
+            <p>
+              Your items are delivered to those in need, creating a real impact!
+            </p>
+          </div>
         </div>
       </div>
 
@@ -186,48 +181,27 @@ const categories = [
   { name: "Donasi", icon: heart },
   { name: "Artikel", icon: newspaper },
   { name: "Laporan", icon: clipboard },
-  
 ];
-const visibleCategories = ref(categories.slice(0, 4));
-const showAll = ref(false);
 
-// Fetch Donation Targets
-const fetchTargets = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'donation-targets'));
-  targets.value = querySnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      name: data.name || 'Unnamed Target',
-      description: data.description || 'No Description',
-      imageLink: data.imageLink || '', // Optional field for image link
-    } as DonationTarget;
-  });
+// Fungsi untuk mendapatkan route berdasarkan nama kategori
+const getCategoryRoute = (categoryName: string) => {
+  switch (categoryName) {
+    case "Article":
+      return "/article";
+    case "Target Donasi":
+      return "/donation-target";
+    case "History":
+      return "/history";
+    default:
+      return "/";
+  }
 };
 
 
-// Fetch Articles
-const fetchArticles = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'articles'));
-  articles.value = querySnapshot.docs.map((doc) => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      title: data.title || 'Untitled Article',
-      description: data.description || 'No Description',
-      imageLink: data.imageLink || '',
-    } as Article;
-  });
-};
+// State for Swiper
+const currentSlide = ref(0);
 
-onMounted(async () => {
-  await fetchTargets();
-  await fetchArticles();
-  loading.value = false; // Matikan loading setelah kedua data selesai dimuat
-});
-
-
-// Swiper Controls
+// Swiper navigation methods
 const onSlideChange = (swiper: any) => {
   currentSlide.value = swiper.realIndex;
 };
@@ -238,12 +212,37 @@ const goToSlide = (index: number) => {
   swiperInstance?.slideToLoop(index);
 };
 
-// Toggle Category Visibility
-const toggleSeeAll = () => {
-  showAll.value = !showAll.value;
-  visibleCategories.value = showAll.value ? categories : categories.slice(0, 4);
-};
+// Mock data for disaster news
+const disasterNews = ref([
+  {
+    title: "Donate Clothes to the Needy",
+    image: "/assets/images/login-illustration.png",
+    description:
+      "Clothing donations are needed urgently in the local community.",
+  },
+  {
+    title: "Donate Electronics to Empower",
+    image: "/assets/images/login-illustration.png",
+    description:
+      "Your old electronics can change lives by providing access to technology.",
+  },
+]);
 
+// Mock data for success stories
+const successStories = ref([
+  {
+    title: "The Impact of Donated Clothes",
+    image: "/assets/images/login-illustration.png",
+    testimonial:
+      "Thanks to your generous clothing donations, many families have been able to stay warm this winter.",
+  },
+  {
+    title: "A New Life Through Electronics",
+    image: "/assets/images/login-illustration.png",
+    testimonial:
+      "Donating your old devices helped students excel in their online classes during the pandemic.",
+  },
+]);
 </script>
 
 <style scoped>
@@ -355,7 +354,7 @@ ion-content {
   justify-content: space-between;
   align-items: center;
   /* margin: 0 12px; */
-  padding: 20px
+  padding: 20px;
 }
 
 .special-header h2 {
@@ -453,9 +452,8 @@ ion-card-content {
   display: flex;
   /* justify-content: space-between; */
   padding-left: 15px;
-  flex-wrap: wrap;  /* Allow items to wrap into the next row */
-   gap: 40px;/* Add gap between items */
-
+  flex-wrap: wrap; /* Allow items to wrap into the next row */
+  gap: 40px; /* Add gap between items */
 }
 
 .category-card {
@@ -499,7 +497,7 @@ ion-card-content {
   padding: 20px 5px 0;
 }
 
-.article-section h2{
+.article-section h2 {
   font-size: 20px;
   color: #333;
   font-weight: bold;
@@ -580,5 +578,36 @@ footer {
 .footer-container a {
   text-decoration: none; /* Hilangkan garis bawah tautan */
   color: #007bff; /* Warna biru khas tautan */
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Spinner for loading */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #85a98f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
