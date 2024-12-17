@@ -21,56 +21,13 @@
         <p class="membership">Premium Member <ion-icon :icon="starOutline"></ion-icon></p>
       </div>
 
-      <!-- About Section -->
-      <div class="about-section">
-        <h3>About Me</h3>
-        <p>
-          I am an active donor passionate about making a difference. Together, we can
-          create a better future for those in need.
-        </p>
-      </div>
-
-      <!-- Family Members -->
-      <div class="family-section">
-        <h3>Family Members</h3>
-        <div class="family-list">
-          <div class="family-member">
-            <img src="/assets/images/login-illustration.png" alt="Chloe K." />
-            <p>Chloe K.</p>
-          </div>
-          <div class="family-member">
-            <img src="/assets/images/login-illustration.png" alt="Carter E." />
-            <p>Carter E.</p>
-          </div>
-          <div class="family-member">
-            <img src="/assets/images/login-illustration.png" alt="Waylen A." />
-            <p>Waylen A.</p>
-          </div>
-          <div class="family-member add-new">
-            <ion-icon :icon="addCircleOutline"></ion-icon>
-            <p>Add New</p>
-          </div>
-        </div>
-      </div>
-
       <!-- Menu Section -->
       <div class="menu-section">
         <ion-list>
-          <ion-item button @click="() => router.push('/dashboard')">
-            <ion-icon :icon="optionsOutline" slot="start"></ion-icon>
-            <ion-label>Dashboard</ion-label>
-          </ion-item>
-          <ion-item button>
-            <ion-icon :icon="timeOutline" slot="start"></ion-icon>
-            <ion-label>Donation History</ion-label>
-          </ion-item>
-          <ion-item button>
+
+          <ion-item button @click="navigateTo('/settingUser')">
             <ion-icon :icon="settingsOutline" slot="start"></ion-icon>
             <ion-label>Settings</ion-label>
-          </ion-item>
-          <ion-item button>
-            <ion-icon :icon="helpCircleOutline" slot="start"></ion-icon>
-            <ion-label>Help & Support</ion-label>
           </ion-item>
           <ion-item button @click="handleLogout">
             <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
@@ -115,6 +72,10 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+// Navigate to different pages
+const navigateTo = (path: string) => {
+  router.push(path);
+};
 </script>
 
 <style scoped>

@@ -41,6 +41,7 @@ import ManageDonationAddPage from "@/views/admin/manage/donations/ManageDonation
 import ManageDonationEditPage from "@/views/admin/manage/donations/ManageDonationEditPage.vue";
 
 import SettingPage from "@/views/admin/SettingPage.vue";
+import SettingUser from "@/views/settingUser.vue";
 
 
 // // Middleware
@@ -127,6 +128,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/pengaturan",
     name: "Pengaturan",
     component: PengaturanPage,
+  },
+  {
+    path: "/settingUser",
+    name: "ManageSettingUser",
+    component: SettingUser,
   },
 
   // Admin Routes
