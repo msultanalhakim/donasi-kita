@@ -44,6 +44,8 @@ import ManageDonationEditPage from "@/views/admin/manage/donations/ManageDonatio
 
 import SettingPage from "@/views/admin/SettingPage.vue";
 import SettingUser from "@/views/settingUser.vue";
+import TargetPage from "@/views/TargetPage.vue";
+import DetailTargetPage from "@/views/DetailTargetPage.vue";
 
 
 // // Middleware
@@ -130,6 +132,17 @@ const routes: Array<RouteRecordRaw> = [
     path: "/detail-artikel/:artikelId",
     name: "Detail Artikel",
     component: DetailArticlePage,
+  },
+
+  {
+    path: "/target",
+    name: "Target",
+    component: TargetPage,
+  },
+  {
+    path: "/detail-target/:targetId",
+    name: "Detail Target",
+    component: DetailTargetPage,
   },
   {
     path: "/pengaturan",
