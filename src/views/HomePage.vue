@@ -19,7 +19,7 @@
             />
             <div class="profile-text">
               <p class="greeting">Selamat Datang,</p>
-              <h2 class="user-name">Muhammad Levi Asshidiqi</h2>
+              <h2 class="user-name">{{ user.name }}</h2>
             </div>
           </div>
           <ion-button fill="clear" class="settings-button">
@@ -39,50 +39,50 @@
       </div>
 
       <!-- Special Offers Section -->
-  <div class="special-offers">
-    <!-- Section Header -->
-    <div class="special-header">
-      <h2>Rekomendasi Donasi</h2>
-    </div>
+      <div class="special-offers">
+        <!-- Section Header -->
+        <div class="special-header">
+          <h2>Rekomendasi Donasi</h2>
+        </div>
 
-    <!-- Swiper Section -->
-    <swiper
-      :space-between="20"
-      :slides-per-view="1"
-      :centered-slides="true"
-      :loop="false"
-      class="special-swiper"
-      @slideChange="onSlideChange"
-    >
-      <swiper-slide
-        v-for="(target, index) in targets"
-        :key="index"
-        class="offer-slide"
-      >
-        <ion-card class="offer-card">
-          <img :src="target.imageLink" alt="Target Image" class="offer-image" />
-          <ion-card-header>
-            <ion-card-title>{{ target.name }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>{{ target.description }}</ion-card-content>
-        </ion-card>
-      </swiper-slide>
-    </swiper>
+        <!-- Swiper Section -->
+        <swiper
+          :space-between="20"
+          :slides-per-view="1"
+          :centered-slides="true"
+          :loop="false"
+          class="special-swiper"
+          @slideChange="onSlideChange"
+        >
+          <swiper-slide
+            v-for="(target, index) in targets"
+            :key="index"
+            class="offer-slide"
+          >
+            <ion-card class="offer-card">
+              <img :src="target.imageLink" alt="Target Image" class="offer-image" />
+              <ion-card-header>
+                <ion-card-title>{{ target.name }}</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>{{ target.description }}</ion-card-content>
+            </ion-card>
+          </swiper-slide>
+        </swiper>
 
-    <!-- Navigation Indicators -->
-    <div class="swiper-navigation">
-      <span
-        v-for="(target, index) in targets"
-        :key="'indicator-' + index"
-        class="swiper-dot"
-        :class="{ active: currentSlide === index }"
-        @click="goToSlide(index)"
-      ></span>
-    </div>
-  </div>
+        <!-- Navigation Indicators -->
+        <div class="swiper-navigation">
+          <span
+            v-for="(target, index) in targets"
+            :key="'indicator-' + index"
+            class="swiper-dot"
+            :class="{ active: currentSlide === index }"
+            @click="goToSlide(index)"
+          ></span>
+        </div>
+      </div>
 
-       <!-- Category Section -->
-       <div class="category-section">
+      <!-- Category Section -->
+      <div class="category-section">
         <div class="category-header">
           <h2>Jelajahi Kategori</h2>
           <ion-button fill="clear" class="see-all-button" @click="toggleSeeAll">
@@ -108,11 +108,7 @@
         <h2>Artikel Terbaru</h2>
 
         <!-- List Artikel -->
-        <div
-          v-for="(article, index) in articles"
-          :key="index"
-          class="article-item"
-        >
+        <div v-for="(article, index) in articles" :key="index" class="article-item">
           <div class="article-flex-container">
             <img :src="article.imageLink" alt="Article Image" class="article-image" />
             <div class="article-text">
@@ -132,17 +128,14 @@
       </div>
 
       <!-- Footer Section -->
-<footer>
-  <div class="footer-container">
-    <p class="copyright-text">
-      © 2024 Donasi Kita. All Rights Reserved.
-    </p>
-    <!-- <p class="footer-credits">
+      <footer>
+        <div class="footer-container">
+          <p class="copyright-text">© 2024 Donasi Kita. All Rights Reserved.</p>
+          <!-- <p class="footer-credits">
       Created by <a href="https://example.com" target="_blank">Donasi-kita</a>
     </p> -->
-  </div>
-</footer>
-      
+        </div>
+      </footer>
     </ion-content>
   </ion-page>
 </template>
@@ -159,15 +152,16 @@ import {
   newspaper,
   clipboard,
 } from "ionicons/icons";
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { dataBase } from "@/firebase";
+import { useAuthStore } from "@/authStore";
 
 // Define the Donation Target type
 type DonationTarget = {
   id: string;
   name: string;
   description: string;
-  imageLink?: string;  // Optional image link
+  imageLink?: string; // Optional image link
 };
 // Define the Article type
 type Article = {
@@ -186,55 +180,56 @@ const categories = [
   { name: "Donasi", icon: heart },
   { name: "Artikel", icon: newspaper },
   { name: "Laporan", icon: clipboard },
-  
 ];
 const visibleCategories = ref(categories.slice(0, 4));
 const showAll = ref(false);
 
 // Fetch Donation Targets
 const fetchTargets = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'donation-targets'));
-  targets.value = querySnapshot.docs.map(doc => {
+  const querySnapshot = await getDocs(collection(dataBase, "donation-targets"));
+  targets.value = querySnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
-      name: data.name || 'Unnamed Target',
-      description: data.description || 'No Description',
-      imageLink: data.imageLink || '', // Optional field for image link
+      name: data.name || "Unnamed Target",
+      description: data.description || "No Description",
+      imageLink: data.imageLink || "", // Optional field for image link
     } as DonationTarget;
   });
 };
 
-
 // Fetch Articles
 const fetchArticles = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'articles'));
+  const querySnapshot = await getDocs(collection(dataBase, "articles"));
   articles.value = querySnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
-      title: data.title || 'Untitled Article',
-      description: data.description || 'No Description',
-      imageLink: data.imageLink || '',
+      title: data.title || "Untitled Article",
+      description: data.description || "No Description",
+      imageLink: data.imageLink || "",
     } as Article;
   });
 };
 
+const authStore = useAuthStore();
+const user = ref("");
 onMounted(async () => {
+  await authStore.loadUserFromLocalStorage();
+  user.value = authStore.currentUser;
   await fetchTargets();
   await fetchArticles();
-  loading.value = false; // Matikan loading setelah kedua data selesai dimuat
+  loading.value = false;
 });
-
 
 // Swiper Controls
 const onSlideChange = (swiper: any) => {
   currentSlide.value = swiper.realIndex;
 };
 const goToSlide = (index: number) => {
-  const swiperInstance = (
-    document.querySelector(".special-swiper") as HTMLElement & { swiper: any }
-  )?.swiper;
+  const swiperInstance = (document.querySelector(".special-swiper") as HTMLElement & {
+    swiper: any;
+  })?.swiper;
   swiperInstance?.slideToLoop(index);
 };
 
@@ -243,7 +238,6 @@ const toggleSeeAll = () => {
   showAll.value = !showAll.value;
   visibleCategories.value = showAll.value ? categories : categories.slice(0, 4);
 };
-
 </script>
 
 <style scoped>
@@ -355,7 +349,7 @@ ion-content {
   justify-content: space-between;
   align-items: center;
   /* margin: 0 12px; */
-  padding: 20px
+  padding: 20px;
 }
 
 .special-header h2 {
@@ -453,9 +447,8 @@ ion-card-content {
   display: flex;
   /* justify-content: space-between; */
   padding-left: 15px;
-  flex-wrap: wrap;  /* Allow items to wrap into the next row */
-   gap: 40px;/* Add gap between items */
-
+  flex-wrap: wrap; /* Allow items to wrap into the next row */
+  gap: 40px; /* Add gap between items */
 }
 
 .category-card {
@@ -499,7 +492,7 @@ ion-card-content {
   padding: 20px 5px 0;
 }
 
-.article-section h2{
+.article-section h2 {
   font-size: 20px;
   color: #333;
   font-weight: bold;
@@ -580,5 +573,36 @@ footer {
 .footer-container a {
   text-decoration: none; /* Hilangkan garis bawah tautan */
   color: #007bff; /* Warna biru khas tautan */
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Spinner for loading */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #85a98f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

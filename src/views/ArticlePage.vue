@@ -13,19 +13,26 @@
         </ion-toolbar>
       </ion-header>
 
+      <!-- loading -->
+      <div v-if="loading" class="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+
       <!-- News Cards Section -->
       <div class="news-container">
-        <div v-for="news in newsList" :key="news.id" class="news-card">
+        <div v-for="news in articles" :key="news.id" class="news-card">
           <ion-card>
-            <ion-img :src="news.image" alt="news.title"></ion-img>
+            <ion-img :src="news.imageLink" alt="news.title"></ion-img>
             <ion-card-header>
               <ion-card-title>{{ news.title }}</ion-card-title>
-              <ion-card-subtitle>{{ news.date }}</ion-card-subtitle>
+              <ion-card-subtitle>{{ news.tanggalTeks }}</ion-card-subtitle>
             </ion-card-header>
-            <ion-card-content>
-              <p>{{ news.summary }}</p>
-            </ion-card-content>
-            <ion-button class="berita-button" expand="block" @click="viewNews(news.id)">
+
+            <ion-button
+              class="berita-button"
+              expand="block"
+              @click="router.push(`/detail-artikel/${news.id}`)"
+            >
               Baca Selengkapnya
             </ion-button>
           </ion-card>
@@ -36,12 +43,38 @@
 </template>
 
 <script setup lang="ts">
+import { dataBase } from "@/firebase";
+import { collection, getDocs } from "firebase/firestore";
 import { arrowBack } from "ionicons/icons";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+const loading = ref(true);
 const router = useRouter();
+const articles = ref([]); // Inisialisasi sebagai array
 
+// ubah tanggal jadi huruf
+const formatFirestoreDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = { day: "numeric", month: "long", year: "numeric" };
+  return new Intl.DateTimeFormat("id-ID", options).format(date);
+};
+
+// Fungsi untuk mengambil artikel dari Firestore
+const fetchArticles = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(dataBase, "articles"));
+    articles.value = querySnapshot.docs.map((doc) => ({
+      id: doc.data().id,
+      imageLink: doc.data().imageLink,
+      title: doc.data().title,
+
+      tanggalTeks: formatFirestoreDate(doc.data().tanggal),
+    }));
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+  }
+};
 // Dummy data for news
 const newsList = ref([
   {
@@ -68,9 +101,16 @@ const newsList = ref([
   },
 ]);
 
-const viewNews = (id: number) => {
-  router.push(`/news/${id}`); // Replace with your detailed news route
-};
+// Fungsi untuk memformat tanggal dan waktu
+
+// Panggil fungsi saat komponen dimuat
+
+onMounted(async () => {
+  await fetchArticles();
+
+  console.log(articles.value);
+  loading.value = false;
+});
 </script>
 
 <style scoped>
@@ -121,5 +161,35 @@ ion-card-content p {
   --background-activated: #525b44;
   --border-radius: 26px;
   transition: background-color 0.5s ease-in-out;
+}
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Spinner for loading */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #85a98f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
