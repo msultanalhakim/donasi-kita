@@ -87,9 +87,8 @@ const fetchArtikel = async () => {
 onMounted(async () => {
   await fetchArtikel();
   console.log(artikelDetails.value);
+  loading.value = false;
 });
-
-loading.value = false;
 </script>
 
 <style scoped>

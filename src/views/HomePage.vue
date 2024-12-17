@@ -13,7 +13,7 @@
         <div class="hero-section">
           <div class="profile-details">
             <img
-              src="/assets/images/login-illustration.png"
+              src="/src/components/images/user.png"
               alt="Profile Picture"
               class="profile-picture"
             />
@@ -109,11 +109,14 @@
 
         <!-- List Artikel -->
         <div v-for="(article, index) in articles" :key="index" class="article-item">
-          <div class="article-flex-container">
+          <div
+            class="article-flex-container"
+            @click="router.push(`/detail-artikel/${article.id}`)"
+          >
             <img :src="article.imageLink" alt="Article Image" class="article-image" />
             <div class="article-text">
               <h3 class="article-title">{{ article.title }}</h3>
-              <p class="article-content">{{ article.description }}</p>
+              <p class="article-content">{{ article.tanggalTeks }}</p>
             </div>
           </div>
           <hr class="article-divider" />
@@ -121,7 +124,11 @@
 
         <!-- Tombol Baca Selengkapnya -->
         <div class="read-more-container">
-          <ion-button class="read-more-button" expand="block" @click="goToArticles">
+          <ion-button
+            class="read-more-button"
+            expand="block"
+            @click="router.push('/artikel')"
+          >
             Baca Selengkapnya
           </ion-button>
         </div>
@@ -155,7 +162,9 @@ import {
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { dataBase } from "@/firebase";
 import { useAuthStore } from "@/authStore";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 // Define the Donation Target type
 type DonationTarget = {
   id: string;
@@ -198,17 +207,25 @@ const fetchTargets = async () => {
   });
 };
 
+// ubah tanggal jadi huruf
+const formatFirestoreDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = { day: "numeric", month: "long", year: "numeric" };
+  return new Intl.DateTimeFormat("id-ID", options).format(date);
+};
+
 // Fetch Articles
 const fetchArticles = async () => {
   const querySnapshot = await getDocs(collection(dataBase, "articles"));
   articles.value = querySnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
-      id: doc.id,
+      id: data.id,
       title: data.title || "Untitled Article",
-      description: data.description || "No Description",
+      author: data.author,
       imageLink: data.imageLink || "",
-    } as Article;
+      tanggalTeks: formatFirestoreDate(data.tanggal),
+    };
   });
 };
 
@@ -555,8 +572,10 @@ ion-card-content {
 }
 
 .read-more-button {
-  --background: #85a98f;
   --background-hover: #5a6c57;
+  --background-activated: #525b44;
+  --background: #85a98f;
+  transition: background-color 0.5s ease-in-out;
   --color: #fff;
   font-size: 10px;
   font-weight: 600;
