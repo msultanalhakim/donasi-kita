@@ -87,11 +87,7 @@
           </ion-button>
         </div>
         <div class="category-grid">
-          <div
-            v-for="(category, index) in categories"
-            :key="index"
-            class="category-card"
-          >
+          <div v-for="(category, index) in categories" :key="index" class="category-card">
             <div class="icon-container">
               <ion-icon :icon="category.icon" class="category-icon"></ion-icon>
             </div>
@@ -110,15 +106,11 @@
           </div>
           <div class="step">
             <ion-icon :icon="location" class="step-icon"></ion-icon>
-            <p>
-              Choose a time for the pickup or drop-off at a nearby location.
-            </p>
+            <p>Choose a time for the pickup or drop-off at a nearby location.</p>
           </div>
           <div class="step">
             <ion-icon :icon="cube" class="step-icon"></ion-icon>
-            <p>
-              Your items are delivered to those in need, creating a real impact!
-            </p>
+            <p>Your items are delivered to those in need, creating a real impact!</p>
           </div>
         </div>
       </div>
@@ -229,7 +221,6 @@ const getCategoryRoute = (categoryName: string) => {
   }
 };
 
-
 // State for Swiper
 const currentSlide = ref(0);
 
@@ -250,8 +241,7 @@ const disasterNews = ref([
   {
     title: "Donate Clothes to the Needy",
     image: "/assets/images/login-illustration.png",
-    description:
-      "Clothing donations are needed urgently in the local community.",
+    description: "Clothing donations are needed urgently in the local community.",
   },
   {
     title: "Donate Electronics to Empower",
@@ -276,6 +266,15 @@ const successStories = ref([
       "Donating your old devices helped students excel in their online classes during the pandemic.",
   },
 ]);
+
+onMounted(async () => {
+  await authStore.loadUserFromLocalStorage();
+  user.value = authStore.currentUser;
+
+  if (user.value) {
+    loading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -387,7 +386,7 @@ ion-content {
   justify-content: space-between;
   align-items: center;
   /* margin: 0 12px; */
-  padding: 20px
+  padding: 20px;
 }
 
 .special-header h2 {
@@ -485,9 +484,8 @@ ion-card-content {
   display: flex;
   /* justify-content: space-between; */
   padding-left: 15px;
-  flex-wrap: wrap;  /* Allow items to wrap into the next row */
-   gap: 40px;/* Add gap between items */
-
+  flex-wrap: wrap; /* Allow items to wrap into the next row */
+  gap: 40px; /* Add gap between items */
 }
 
 .category-card {
@@ -531,7 +529,7 @@ ion-card-content {
   padding: 20px 5px 0;
 }
 
-.article-section h2{
+.article-section h2 {
   font-size: 20px;
   color: #333;
   font-weight: bold;
@@ -561,5 +559,36 @@ ion-card-content {
   font-size: 15px;
   font-weight: bold;
   color: #333;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Spinner for loading */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #85a98f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

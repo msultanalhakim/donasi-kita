@@ -1,6 +1,11 @@
 <template>
   <ion-page>
     <ion-content fullscreen>
+      <!-- loading -->
+      <div v-if="loading" class="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+
       <!-- Profile Section -->
       <div class="profile-overview">
         <!-- Profile Picture -->
@@ -12,18 +17,16 @@
           />
         </div>
         <!-- Name and Membership -->
-        <h2 class="username">Muhammad Sultan Alhakim</h2>
-        <p class="membership">
-          Premium Member <ion-icon :icon="starOutline"></ion-icon>
-        </p>
+        <h2 class="username">{{ user.name }}</h2>
+        <p class="membership">Premium Member <ion-icon :icon="starOutline"></ion-icon></p>
       </div>
 
       <!-- About Section -->
       <div class="about-section">
         <h3>About Me</h3>
         <p>
-          I am an active donor passionate about making a difference. Together,
-          we can create a better future for those in need.
+          I am an active donor passionate about making a difference. Together, we can
+          create a better future for those in need.
         </p>
       </div>
 
@@ -92,15 +95,26 @@ import {
   starOutline,
 } from "ionicons/icons";
 import { useAuthStore } from "@/authStore";
+import { onMounted, ref } from "vue";
 
 const router = useRouter();
-
+const loading = ref(true);
 const authStore = useAuthStore(); // Mengakses authStore
+const user = ref("");
 
 const handleLogout = async () => {
   await authStore.logout(); // Memanggil fungsi logout dari authStore.ts
-  router.push("/login"); // Arahkan ke halaman login setelah logout
+  await router.push("/login"); // Arahkan ke halaman login setelah logout
 };
+
+onMounted(async () => {
+  await authStore.loadUserFromLocalStorage();
+  user.value = authStore.currentUser;
+
+  if (user.value) {
+    loading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -244,5 +258,33 @@ ion-icon {
 ion-label {
   font-size: 16px;
   color: #333;
+}
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #85a98f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

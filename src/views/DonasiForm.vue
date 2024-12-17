@@ -68,7 +68,7 @@
           <ion-item class="form-input">
             <ion-label position="stacked">Meotode Pengiriman</ion-label>
             <ion-select
-              interface="popover"
+              interface="alert"
               v-model="donationDetails.metodePengiriman"
               placeholder="Pilih Kategori Barang"
             >
@@ -170,6 +170,7 @@ const donationDetails = ref({
   metodePengiriman: "",
   kategori: "",
   penerima: "",
+  alamat: "",
   barang: "",
   jumlah: "",
   pesan: "",

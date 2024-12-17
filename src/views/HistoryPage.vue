@@ -137,14 +137,17 @@ const fetchDonations = async () => {
       collection(dataBase, "donations"),
       where("email", "==", user.value.email)
     );
-    const querySnapshot = await getDocs(donationsQuery);
 
-    donations.value = querySnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      tanggalTeks: formatFirestoreDate(doc.data().tanggal), // Format tanggal di sini
-    }));
+    if (donationsQuery) {
+      const querySnapshot = await getDocs(donationsQuery);
 
-    // console.log("Data Donasi:", donations.value); // Cek data yang diterima dari Firestore
+      donations.value = querySnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        tanggalTeks: formatFirestoreDate(doc.data().tanggal), // Format tanggal di sini
+      }));
+    } else {
+      alert("Anda Belum Pernah Melakukan Donasi");
+    }
   } catch (error) {
     console.error("Error fetching donation targets:", error);
   }
