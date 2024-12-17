@@ -66,15 +66,15 @@
 
           <!-- Tipe Pengiriman -->
           <ion-item class="form-input">
-            <ion-label position="stacked">Meotode Pengiriman</ion-label>
+            <ion-label position="stacked">Metode Pengiriman</ion-label>
             <ion-select
               interface="alert"
               v-model="donationDetails.metodePengiriman"
               placeholder="Pilih Kategori Barang"
             >
               <ion-select-option value="Antar Sendiri"> Antar Sendiri </ion-select-option>
-              <ion-select-option value="Pengiriman Pihak Ketiga">
-                Pengiriman Pihak Ketiga
+              <ion-select-option value="Pengiriman">
+                Pengambilan dari Pihak Kita
               </ion-select-option>
             </ion-select>
           </ion-item>
