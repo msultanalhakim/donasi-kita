@@ -49,32 +49,40 @@ const adminRoute = [
 
 // Pantau perubahan auth dan navigasi
 onMounted(async () => {
-  await authStore.loadUserFromLocalStorage(); // Ambil data dari localStorage
+  await authStore.loadUserFromLocalStorage();
   user.value = authStore.currentUser;
-  console.log("Info user", user.value);
 
-  // // Cek jika pengguna belum login, alihkan ke login
-  // if (!authStore.isAuthenticated()) {
-  //   if (["Login", "Register"].includes(route.name as string)) {
-  //     return; // Biarkan pengguna tetap di halaman login/register
-  //   }
-  //   alert("Anda melakukan hal ilegal");
-  //   router.replace("/login"); // Arahkan ke login jika belum login
-  // }
-});
-
-watch([() => authStore.currentUser, () => route.name], ([x, y]) => {
-  if (x && guestRoute.includes(y as string)) {
-    router.replace("/home"); // Arahkan ke Home jika sudah login
-    alert("Anda Sudah Melakukan Login");
-  }
-  // Jika pengguna bukan admin dan mencoba akses halaman admin
-  if (
-    adminRoute.includes(y as string) &&
-    (!x || (x.role !== "Administrator" && x.role !== "Admin"))
-  ) {
-    router.replace("/home");
+  if (!authStore.isAuthenticated() && !guestRoute.includes(route.name as string)) {
     alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+    await router.replace("/login");
+    window.location.reload();
+  }
+  // Jika user mencoba mengakses halaman admin tetapi tidak memiliki izin
+  if (
+    adminRoute.includes(route.name as string) &&
+    (!user.value || !(user.value.role === "Administrator" || user.value.role === "Admin"))
+  ) {
+    alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+    await router.replace("/home"); // Navigasi ke halaman home
+    return; // Hentikan eksekusi lebih lanjut
   }
 });
+
+// watch([() => user.value, () => route.name], async ([currentUser, currentRoute]) => {
+//   if (currentUser && guestRoute.includes(currentRoute as string)) {
+//     await router.replace("/home");
+//     alert("Anda Sudah Melakukan Login");
+//     window.location.reload();
+//   }
+
+//   if (
+//     adminRoute.includes(currentRoute as string) &&
+//     (!currentUser ||
+//       !(currentUser.role === "Administrator" || currentUser.role === "Admin"))
+//   ) {
+//     await router.replace("/home");
+//     alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+//     window.location.reload();
+//   }
+// });
 </script>

@@ -2,6 +2,11 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button @click="router.push('/profile')" fill="clear" color="dark">
+            <ion-icon slot="icon-only" :icon="arrowBack"></ion-icon>
+          </ion-button>
+        </ion-buttons>
         <ion-title>Admin Dashboard</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -17,7 +22,18 @@
             <div class="stat">
               <div class="icon-container">
                 <!-- Ikon Users dalam bentuk SVG -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users" width="25" height="25">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-users"
+                  width="25"
+                  height="25"
+                >
                   <circle cx="12" cy="7" r="4"></circle>
                   <path d="M12 14c4 0 8 2 8 6H4c0-4 4-6 8-6z"></path>
                 </svg>
@@ -28,7 +44,17 @@
             <div class="stat">
               <div class="icon-container">
                 <!-- Ikon Kotak Sumbangan dalam bentuk SVG -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="25" height="25">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  width="25"
+                  height="25"
+                >
                   <rect x="3" y="3" width="18" height="14" rx="2" ry="2"></rect>
                   <path d="M7 7h10M9 13h6"></path>
                 </svg>
@@ -39,8 +65,21 @@
             <div class="stat">
               <div class="icon-container">
                 <!-- Ikon Articles dalam bentuk SVG -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text" width="25" height="25">
-                  <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-file-text"
+                  width="25"
+                  height="25"
+                >
+                  <path
+                    d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+                  ></path>
                   <path d="M6 2v20"></path>
                   <path d="M6 10h12"></path>
                   <path d="M6 14h12"></path>
@@ -52,7 +91,18 @@
             <div class="stat">
               <div class="icon-container">
                 <!-- Ikon Donations Target dalam bentuk SVG -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-target" width="25" height="25">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-target"
+                  width="25"
+                  height="25"
+                >
                   <circle cx="12" cy="12" r="10"></circle>
                   <circle cx="12" cy="12" r="6"></circle>
                   <circle cx="12" cy="12" r="2"></circle>
@@ -103,12 +153,22 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 import { IonList, IonItem, IonIcon, IonLabel } from "@ionic/vue";
-import { cashOutline, giftOutline, logOutOutline, newspaperOutline, peopleOutline, pricetagsOutline, settingsOutline, storefront } from "ionicons/icons";
-import { dataBase } from '@/firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import { ref, onMounted } from 'vue';
+import {
+  cashOutline,
+  giftOutline,
+  logOutOutline,
+  newspaperOutline,
+  peopleOutline,
+  pricetagsOutline,
+  settingsOutline,
+  storefront,
+  arrowBack,
+} from "ionicons/icons";
+import { dataBase } from "@/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { ref, onMounted } from "vue";
 
 // Define types
 interface DonationTarget {
@@ -134,30 +194,30 @@ const targetCount = ref(0);
 
 // Fetch users from Firestore
 const fetchUsers = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'users'));
-  users.value = querySnapshot.docs.map(doc => doc.data());
+  const querySnapshot = await getDocs(collection(dataBase, "users"));
+  users.value = querySnapshot.docs.map((doc) => doc.data());
   userCount.value = users.value.length;
 };
 
 // Fetch donations from Firestore
 const fetchDonations = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'donations'));
-  donations.value = querySnapshot.docs.map(doc => doc.data());
+  const querySnapshot = await getDocs(collection(dataBase, "donations"));
+  donations.value = querySnapshot.docs.map((doc) => doc.data());
   donationCount.value = donations.value.length;
 };
 
 // Fetch articles from Firestore
 const fetchArticles = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'articles'));
+  const querySnapshot = await getDocs(collection(dataBase, "articles"));
   articles.value = querySnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
-      title: data.title || 'Untitled Article',
-      author: data.author || 'Unknown Author',
-      description: data.description || 'No Description',
-      createdAt: data.createdAt || null, 
-      lastUpdated: data.lastUpdated || null, 
+      title: data.title || "Untitled Article",
+      author: data.author || "Unknown Author",
+      description: data.description || "No Description",
+      createdAt: data.createdAt || null,
+      lastUpdated: data.lastUpdated || null,
     };
   });
   articleCount.value = articles.value.length;
@@ -165,13 +225,13 @@ const fetchArticles = async () => {
 
 // Fetch donation targets from Firestore
 const fetchTargets = async () => {
-  const querySnapshot = await getDocs(collection(dataBase, 'donation-targets'));
-  targets.value = querySnapshot.docs.map(doc => {
+  const querySnapshot = await getDocs(collection(dataBase, "donation-targets"));
+  targets.value = querySnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
-      name: data.name || 'Unnamed Target',
-      description: data.description || 'No Description',
+      name: data.name || "Unnamed Target",
+      description: data.description || "No Description",
     } as DonationTarget;
   });
   targetCount.value = targets.value.length; // Update target count
@@ -192,15 +252,15 @@ const navigateTo = (path: string) => {
 
 // Logout function
 const logout = () => {
-  console.log('Logout clicked');
-  router.push('/login');
+  console.log("Logout clicked");
+  router.push("/login");
 };
 </script>
 
 <style scoped>
 ion-content {
   --background: #f4f4f7;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 /* Dashboard Overview */
@@ -313,8 +373,7 @@ ion-label {
   color: #2c3e50;
 }
 .icon-container i {
-  font-size: 30px;  /* Pastikan ikon cukup besar */
-  color: #2c3e50;   /* Warna ikon */
+  font-size: 30px; /* Pastikan ikon cukup besar */
+  color: #2c3e50; /* Warna ikon */
 }
-
 </style>

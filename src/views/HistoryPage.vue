@@ -137,12 +137,16 @@ const fetchDonations = async () => {
       const querySnapshot = await getDocs(donationsQuery);
 
       donations.value = querySnapshot.docs
-        .map((doc) => ({
-          ...doc.data(),
-          tanggalTeks: formatFirestoreDate(doc.data().tanggal),
-          timestamp: new Date(doc.data().id).getTime(),
-        }))
-        .sort((a, b) => b.timestamp - a.timestamp); // Mengurutkan terbaru terlebih dahulu
+        .map((doc) => {
+          const formattedData = convertIdToFormattedData(doc.data().id); // Panggil fungsi
+
+          return {
+            ...doc.data(),
+            tanggalTeks: formattedData.tanggalTeks, // Gunakan tanggalTeks yang telah diformat
+            timestamp: new Date(doc.data().id).getTime(),
+          };
+        })
+        .sort((a, b) => b.timestamp - a.timestamp); // Mengurutkan berdasarkan timestamp terbaru terlebih dahulu
     } else {
       alert("Anda Belum Pernah Melakukan Donasi");
     }
@@ -152,10 +156,38 @@ const fetchDonations = async () => {
 };
 
 // ubah tanggal jadi huruf
-const formatFirestoreDate = (dateString) => {
-  const date = new Date(dateString);
-  const options = { day: "numeric", month: "long", year: "numeric" };
-  return new Intl.DateTimeFormat("id-ID", options).format(date);
+// const formatFirestoreDate = (dateString) => {
+//   const date = new Date(dateString);
+//   const options = { day: "numeric", month: "long", year: "numeric" };
+//   return new Intl.DateTimeFormat("id-ID", options).format(date);
+// };
+
+const convertIdToFormattedData = (id) => {
+  const date = new Date(id); // Mengonversi string ID ke objek Date
+
+  // Format tanggal angka: 18-12-2024
+  const tanggalAngka = date
+    .toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, "-"); // Ganti separator "/" dengan "-"
+
+  // Format jam: 11.35
+  const jam = date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  // Format tanggal teks: 18 Desember 2024
+  const tanggalTeks = date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  return { tanggalAngka, jam, tanggalTeks };
 };
 
 // Menangani proses saat komponen dimuat
