@@ -63,7 +63,9 @@
               <ion-card-header>
                 <ion-card-title>{{ target.name }}</ion-card-title>
               </ion-card-header>
-              <ion-card-content class="offer-description">{{ limitDescription(target.description) }}</ion-card-content>
+              <ion-card-content class="offer-description">{{
+                limitDescription(target.description)
+              }}</ion-card-content>
             </ion-card>
           </swiper-slide>
         </swiper>
@@ -75,7 +77,6 @@
             :key="'indicator-' + index"
             class="swiper-dot"
             :class="{ active: currentSlide === index }"
-            
           ></span>
         </div>
       </div>
@@ -159,7 +160,7 @@ import {
   heart,
   newspaper,
   document,
-  home
+  home,
 } from "ionicons/icons";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { dataBase } from "@/firebase";
@@ -234,8 +235,8 @@ const fetchArticles = async () => {
 
 // Function to limit description to 30 words
 const limitDescription = (description: string) => {
-  const words = description.split(' ');
-  return words.length > 20 ? words.slice(0, 20).join(' ') + '...' : description;
+  const words = description.split(" ");
+  return words.length > 20 ? words.slice(0, 20).join(" ") + "..." : description;
 };
 
 const authStore = useAuthStore();
@@ -578,7 +579,7 @@ ion-card-content {
   --background: #85a98f;
   transition: background-color 0.5s ease-in-out;
   --color: #fff;
-  --border-radius:18px;
+  --border-radius: 18px;
   font-size: 12px;
   font-weight: 600;
   padding: 10px 60px;

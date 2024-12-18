@@ -57,12 +57,12 @@
             <ion-text>{{ donationDetails.jumlah }}</ion-text>
           </ion-item>
 
-          <!-- Metode Pengriman -->
+          <!-- Metode Pengriman
 
           <ion-item class="form-input">
             <ion-label position="stacked">Metode Pengiriman</ion-label>
             <ion-text>{{ donationDetails.metodePengiriman }}</ion-text>
-          </ion-item>
+          </ion-item> -->
 
           <!-- Pesan Opsional -->
           <ion-item class="form-input">
@@ -73,9 +73,13 @@
           <!-- Tanggal dan Waktu -->
           <ion-item class="form-input">
             <ion-label position="stacked">Tanggal & Waktu</ion-label>
-            <ion-text>{{ donationDetails.tanggal }} {{ donationDetails.jam }}</ion-text>
+            <ion-text>{{ donationDetails.tanggal }}</ion-text>
           </ion-item>
 
+          <ion-item class="form-input">
+            <ion-label position="stacked">Jam</ion-label>
+            <ion-text>{{ donationDetails.jam }}</ion-text>
+          </ion-item>
           <!-- Tombol Kembali
           <ion-button expand="block" class="submit-button" @click="goBack">
             Kembali
@@ -111,7 +115,10 @@ const fetchDonation = async () => {
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
+        const formattedData = convertIdToFormattedData(doc.data().id);
         donationDetails.value = doc.data();
+        donationDetails.value.tanggal = formattedData.tanggalAngka;
+
         console.log("Donasi ditemukan:", donationDetails.value);
       });
     } else {
@@ -122,6 +129,34 @@ const fetchDonation = async () => {
   }
 };
 
+const convertIdToFormattedData = (id) => {
+  const date = new Date(id); // Mengonversi string ID ke objek Date
+
+  // Format tanggal angka: 18-12-2024
+  const tanggalAngka = date
+    .toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, "-"); // Ganti separator "/" dengan "-"
+
+  // Format jam: 11:54
+  // const jam = date.toLocaleTimeString("id-ID", {
+  //   hour: "2-digit",
+  //   minute: "2-digit",
+  //   hourCycle: "h23",
+  // });
+
+  // Format tanggal teks: 18 Desember 2024
+  const tanggalTeks = date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  return { tanggalAngka, tanggalTeks };
+};
 onMounted(async () => {
   await fetchDonation();
 

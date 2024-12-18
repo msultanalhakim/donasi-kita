@@ -25,7 +25,7 @@
       <div class="menu-section">
         <ion-list>
           <ion-item
-            v-if="user.role == Administrator"
+            v-if="user.role == 'Administrator'"
             button
             @click="() => router.push('/dashboard')"
           >
@@ -82,7 +82,7 @@ const handleLogout = async () => {
 onMounted(async () => {
   await authStore.loadUserFromLocalStorage();
   user.value = authStore.currentUser;
-
+  console.log(user.value.role);
   if (user.value) {
     loading.value = false;
   }
