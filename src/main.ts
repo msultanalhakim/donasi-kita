@@ -43,7 +43,8 @@ import {
   IonSegment,
   IonBadge,
   IonSegmentButton,
-  IonCheckbox
+  IonCheckbox,
+  IonPopover
 } from '@ionic/vue';
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -128,6 +129,7 @@ app.component('ion-segment-button', IonSegmentButton);
 app.component('ion-badge', IonBadge);
 app.component('ion-searchbar', IonSearchbar);
 app.component('ion-checkbox', IonCheckbox);
+app.component('ion-popover', IonPopover);
 app.component('swiper', Swiper);
 app.component('swiper-slide', SwiperSlide);
 

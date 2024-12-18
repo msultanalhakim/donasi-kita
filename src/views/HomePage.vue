@@ -19,21 +19,31 @@
             />
             <div class="profile-text">
               <p class="greeting">Selamat Datang,</p>
-              <h2 class="user-name">{{ user.name }}</h2>
+              <h2 class="user-name">{{ user?.name ?? 'User' }}</h2>
             </div>
           </div>
-          <ion-button fill="clear" class="settings-button">
+          <ion-button fill="clear" class="settings-button" @click="openPopover">
             <ion-icon :icon="settings"></ion-icon>
           </ion-button>
+
+          <ion-popover :is-open="showPopover" @did-dismiss="closePopover">
+            <ion-content>
+              <ion-list>
+                <ion-item button @click="handleLogout">Logout</ion-item>
+              </ion-list>
+            </ion-content>
+          </ion-popover>
         </div>
 
-        <!-- Search Bar Section -->
+       <!-- Search Bar Section -->
         <div class="search-bar">
           <ion-icon :icon="searchOutline" class="search-icon"></ion-icon>
           <input
+            v-model="searchQuery"
             type="text"
             class="search-input"
             placeholder="What are you looking for today?"
+            @input="filterContent"
           />
         </div>
       </div>
@@ -45,14 +55,15 @@
           <h2>Rekomendasi Donasi</h2>
         </div>
 
-        <!-- Swiper Section -->
-        <swiper
-          :space-between="20"
-          :slides-per-view="1"
-          :centered-slides="true"
-          :loop="false"
-          class="special-swiper"
-        >
+          <!-- Swiper Section -->
+          <swiper
+            :space-between="20"
+            :slides-per-view="1"
+            :centered-slides="true"
+            :loop="false"
+            class="special-swiper"
+            @slideChange="onSlideChange"
+          >
           <swiper-slide
             v-for="(target, index) in targets"
             :key="index"
@@ -63,9 +74,9 @@
               <ion-card-header>
                 <ion-card-title>{{ target.name }}</ion-card-title>
               </ion-card-header>
-              <ion-card-content class="offer-description">{{
-                limitDescription(target.description)
-              }}</ion-card-content>
+              <ion-card-content class="offer-description">
+                {{ limitDescription(target.description) }}
+              </ion-card-content>
             </ion-card>
           </swiper-slide>
         </swiper>
@@ -77,9 +88,11 @@
             :key="'indicator-' + index"
             class="swiper-dot"
             :class="{ active: currentSlide === index }"
+            @click="goToSlide(index)"
           ></span>
         </div>
       </div>
+
 
       <!-- Category Section -->
       <div class="category-section">
@@ -118,7 +131,8 @@
             <img :src="article.imageLink" alt="Article Image" class="article-image" />
             <div class="article-text">
               <h3 class="article-title">{{ article.title }}</h3>
-              <p class="article-content">{{ article.tanggalTeks }}</p>
+              <p class="article-content">{{ article.description.slice(0, 70) }}...</p>
+              <span class="article-footer">{{ article.tanggalTeks }}</span>
             </div>
           </div>
           <hr class="article-divider" />
@@ -152,6 +166,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
+import { Swiper as SwiperClass } from 'swiper';
 import "swiper/css";
 import {
   settingsOutline,
@@ -162,12 +177,13 @@ import {
   document,
   home,
 } from "ionicons/icons";
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { dataBase } from "@/firebase";
 import { useAuthStore } from "@/authStore";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
 // Define the Donation Target type
 type DonationTarget = {
   id: string;
@@ -175,17 +191,19 @@ type DonationTarget = {
   description: string;
   imageLink?: string; // Optional image link
 };
+
 // Define the Article type
 type Article = {
   id: string;
   title: string;
   description: string;
   imageLink?: string;
+  tanggalTeks?: string;  // Add tanggalTeks to the Article type
 };
 
 // State Variables
 const loading = ref(true);
-const targets = ref<any[]>([]);
+const targets = ref<DonationTarget[]>([]);
 const articles = ref<Article[]>([]);
 const currentSlide = ref(0);
 const categories = [
@@ -211,10 +229,10 @@ const fetchTargets = async () => {
   });
 };
 
-// ubah tanggal jadi huruf
-const formatFirestoreDate = (dateString) => {
+// Format Firestore Date to 'Day Month Year' format
+const formatFirestoreDate = (dateString: string): string => {
   const date = new Date(dateString);
-  const options = { day: "numeric", month: "long", year: "numeric" };
+  const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
   return new Intl.DateTimeFormat("id-ID", options).format(date);
 };
 
@@ -229,18 +247,26 @@ const fetchArticles = async () => {
       author: data.author,
       imageLink: data.imageLink || "",
       tanggalTeks: formatFirestoreDate(data.tanggal),
-    };
+      description: data.description || "No description available",  // Default description
+    } as Article;
   });
 };
 
-// Function to limit description to 30 words
+// Function to limit description to 20 words
 const limitDescription = (description: string) => {
   const words = description.split(" ");
-  return words.length > 20 ? words.slice(0, 20).join(" ") + "..." : description;
+  return words.length > 18 ? words.slice(0, 18).join(" ") + "..." : description;
 };
 
 const authStore = useAuthStore();
-const user = ref("");
+
+// Define the User type
+interface User {
+  name: string;
+  email: string;
+  // Add other properties as needed
+}
+const user = ref<User | null>(null);
 onMounted(async () => {
   await authStore.loadUserFromLocalStorage();
   user.value = authStore.currentUser;
@@ -249,23 +275,70 @@ onMounted(async () => {
   loading.value = false;
 });
 
-// // Swiper Controls
-// const onSlideChange = (swiper: any) => {
-//   currentSlide.value = swiper.realIndex;
-// };
-// const goToSlide = (index: number) => {
-//   const swiperInstance = (document.querySelector(".special-swiper") as HTMLElement & {
-//     swiper: any;
-//   })?.swiper;
-//   swiperInstance?.slideToLoop(index);
-// };
+// Swiper navigation methods
+const onSlideChange = (swiper: any) => {
+  currentSlide.value = swiper.realIndex;
+};
+// Menginisialisasi swiper
+let swiperInstance: SwiperClass | null = null;
+
+// Fungsi untuk memindahkan ke slide yang dipilih berdasarkan index
+const goToSlide = (index: number) => {
+  if (swiperInstance) {
+    swiperInstance.slideTo(index);
+  }
+};
+
+// Saat Swiper siap, set instance swiper
+const onSwiperInit = (swiper: SwiperClass) => {
+  swiperInstance = swiper;
+};
 
 // Toggle Category Visibility
 const toggleSeeAll = () => {
   showAll.value = !showAll.value;
   visibleCategories.value = showAll.value ? categories : categories.slice(0, 4);
 };
+
+// State for managing the popover visibility
+const showPopover = ref(false);
+
+const openPopover = () => {
+  showPopover.value = true;
+};
+
+const closePopover = () => {
+  showPopover.value = false;
+};
+
+// Implement logout functionality
+const handleLogout = async () => {
+  await authStore.logout(); // Memanggil fungsi logout dari authStore.ts
+  await router.push("/login"); // Arahkan ke halaman login setelah logout
+};
+
+// State for managing the search query
+const searchQuery = ref("");
+
+// Filter function for content (articles or targets)
+const filterContent = () => {
+  if (searchQuery.value.trim() === "") {
+    // If search query is empty, show all content
+    fetchArticles();
+    fetchTargets();
+  } else {
+    // Filter articles and targets based on the search query
+    articles.value = articles.value.filter(article =>
+      article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+    targets.value = targets.value.filter(target =>
+      target.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+};
+
 </script>
+
 
 <style scoped>
 /* General styling */
@@ -366,17 +439,14 @@ ion-content {
 }
 
 /* General Container */
-.special-offers {
-  /* padding: 12px 5px 0; */
-}
 
 /* Section Header */
 .special-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* margin: 0 12px; */
-  padding: 20px;
+  margin: 10px 12px 0px;
+  padding: 4px 20px;
 }
 
 .special-header h2 {
@@ -394,17 +464,19 @@ ion-content {
 
 /* Swiper Section */
 .special-swiper {
-  margin-top: -10px;
+  margin-top: -16px !important;
 }
 
 .offer-slide {
   width: 80%;
+  padding: 0 10px;
 }
 
 .offer-card {
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
 }
 
 .offer-description {
@@ -470,14 +542,14 @@ ion-card-content {
   font-weight: bold;
   color: #333;
   margin: 0;
-  padding: 20px;
+  padding: 0 20px;
 }
 
 .category-grid {
   padding: 4px 0;
   display: flex;
   justify-content: center;
-  padding-left: 15px;
+  padding-left: 10px;
   flex-wrap: wrap; /* Allow items to wrap into the next row */
   gap: 40px; /* Add gap between items */
 }
@@ -493,6 +565,10 @@ ion-card-content {
 
 .category-card:hover {
   transform: scale(1.05);
+}
+
+.category-card button {
+  background: transparent;
 }
 
 .icon-container {
@@ -527,25 +603,24 @@ ion-card-content {
   font-size: 20px;
   color: #333;
   font-weight: bold;
-  padding: 0 0 10px;
 }
 
 .article-flex-container {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
 }
 
 .article-image {
-  width: 150px;
-  height: 100px;
+  width: 40%;
+  height: 120px;
   object-fit: cover;
   border-radius: 10px;
 }
 
 .article-text {
-  flex: 1;
+  width: 60%;
+  padding: 14px;
 }
 
 .article-title {
@@ -556,6 +631,12 @@ ion-card-content {
 }
 
 .article-content {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.article-footer {
   font-size: 14px;
   color: #555;
   line-height: 1.6;
