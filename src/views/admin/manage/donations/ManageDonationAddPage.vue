@@ -214,13 +214,13 @@
   
     try {
       await addDoc(collection(dataBase, 'donations'), {
-        itemName: donationName.value,
-        quantity: donationQuantity.value,
-        deliveryType: deliveryType.value,
-        message: donationMessage.value || 'No message provided',
-        categoryItem: donationCategories.value, // Store selected category ID
-        targetDonasi: donationTarget.value, // Store selected target ID
-        userEmail: userEmail.value, // Store selected user email
+        barang: donationName.value,
+        jumlah: donationQuantity.value,
+        metodePengiriman: deliveryType.value,
+        pesan: donationMessage.value || 'No message provided',
+        kategori: donationCategories.value, // Store selected category ID
+        penerima: donationTarget.value, // Store selected target ID
+        email: userEmail.value, // Store selected user email
       });
   
       showToast('Donation added successfully!', 'success');

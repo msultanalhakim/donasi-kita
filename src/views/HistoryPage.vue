@@ -125,11 +125,6 @@ const filteredDonations = computed(() => {
   return [];
 });
 
-const completedTasks = ref([
-  { id: 3, title: "Donasi Mainan", description: "Donasi mainan telah selesai." },
-  { id: 4, title: "Donasi Elektronik", description: "Donasi elektronik telah selesai." },
-]);
-
 // Ambil data dari Firestore
 const fetchDonations = async () => {
   try {
@@ -137,14 +132,20 @@ const fetchDonations = async () => {
       collection(dataBase, "donations"),
       where("email", "==", user.value.email)
     );
-    const querySnapshot = await getDocs(donationsQuery);
 
-    donations.value = querySnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      tanggalTeks: formatFirestoreDate(doc.data().tanggal), // Format tanggal di sini
-    }));
+    if (donationsQuery) {
+      const querySnapshot = await getDocs(donationsQuery);
 
-    // console.log("Data Donasi:", donations.value); // Cek data yang diterima dari Firestore
+      donations.value = querySnapshot.docs
+        .map((doc) => ({
+          ...doc.data(),
+          tanggalTeks: formatFirestoreDate(doc.data().tanggal),
+          timestamp: new Date(doc.data().id).getTime(),
+        }))
+        .sort((a, b) => b.timestamp - a.timestamp); // Mengurutkan terbaru terlebih dahulu
+    } else {
+      alert("Anda Belum Pernah Melakukan Donasi");
+    }
   } catch (error) {
     console.error("Error fetching donation targets:", error);
   }

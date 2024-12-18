@@ -20,7 +20,7 @@ const user = ref("");
 
 // Menentukan halaman mana yang harus menampilkan Bottombar
 const showTabs = computed(() => {
-  const visibleRoutes = ["Home", "Beranda", "Pengaturan", "Berita", "Profile"];
+  const visibleRoutes = ["Home", "Beranda", "Pengaturan", "Artikel", "Profile", "Target"];
   return route.name && visibleRoutes.includes(route.name as string);
 });
 
@@ -29,7 +29,23 @@ const authStore = useAuthStore();
 
 //rute
 const guestRoute = ["Login", "Register"];
-const adminRoute = ["ManageUser", "ManageTarget", "ManageCategory"];
+const adminRoute = [
+  "Dashboard",
+  "ManageUser",
+  "ManageUserAdd",
+  "ManageUserEdit",
+  "ManageTarget",
+  "ManageTargetAdd",
+  "ManageCategory",
+  "ManageCategoryAdd",
+  "ManageCategoryEdit",
+  "ManageArticle",
+  "ManageArticleAdd",
+  "ManageArticleEdit",
+  "ManageDonation",
+  "ManageDonationAdd",
+  "ManageDonationEdit",
+];
 
 // Pantau perubahan auth dan navigasi
 onMounted(async () => {
@@ -48,16 +64,17 @@ onMounted(async () => {
 });
 
 watch([() => authStore.currentUser, () => route.name], ([x, y]) => {
-  // if (x && guestRoute.includes(y as string)) {
-  //   router.replace("/home"); // Arahkan ke Home jika sudah login
-  // }
-  // // Jika pengguna bukan admin dan mencoba akses halaman admin
-  // if (
-  //   adminRoute.includes(y as string) &&
-  //   (!x || (x.role !== "Administrator" && x.role !== "Admin"))
-  // ) {
-  //   router.replace("/home");
-  //   alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
-  // }
+  if (x && guestRoute.includes(y as string)) {
+    router.replace("/home"); // Arahkan ke Home jika sudah login
+    alert("Anda Sudah Melakukan Login");
+  }
+  // Jika pengguna bukan admin dan mencoba akses halaman admin
+  if (
+    adminRoute.includes(y as string) &&
+    (!x || (x.role !== "Administrator" && x.role !== "Admin"))
+  ) {
+    router.replace("/home");
+    alert("Anda tidak memiliki izin untuk mengakses halaman ini.");
+  }
 });
 </script>

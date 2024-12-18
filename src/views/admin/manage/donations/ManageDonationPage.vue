@@ -42,13 +42,13 @@
               <ion-item v-for="donation in paginatedDonations" :key="donation.id" lines="inset">
                 <ion-label>
                   <div class="donation-card">
-                    <h2>{{ donation.itemName }}</h2>
+                    <h2>{{ donation.barang }}</h2>
                     <div class="donation-info">
-                      <p><strong>Quantity:</strong> {{ donation.quantity }}</p>
-                      <p><strong>Category:</strong> {{ donation.categoryItem }}</p>
-                      <p><strong>Delivery Type:</strong> {{ donation.deliveryType }}</p>
-                      <p><strong>Target:</strong> {{ donation.targetDonasi }}</p>
-                      <p><strong>User Email:</strong> {{ donation.userEmail }}</p>
+                      <p><strong>Quantity:</strong> {{ donation.jumlah }}</p>
+                      <p><strong>Category:</strong> {{ donation.kategori }}</p>
+                      <p><strong>Delivery Type:</strong> {{ donation.metodePengiriman }}</p>
+                      <p><strong>Target:</strong> {{ donation.penerima }}</p>
+                      <p><strong>User Email:</strong> {{ donation.email }}</p>
                     </div>
                     <ion-buttons slot="end" class="button-group">
                       <ion-button color="primary" fill="outline" @click="editDonation(donation)">
@@ -86,7 +86,7 @@
   <script setup lang="ts">
   import { useRouter } from 'vue-router';
   import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-  import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+  import { collection, getDocs, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
   import { dataBase } from '@/firebase';
   import { trash, create, add, home } from 'ionicons/icons';
   import { alertController, toastController } from '@ionic/vue';
@@ -97,12 +97,12 @@
   // Define the Donation type
   type Donation = {
     id: string;
-    itemName: string;
-    quantity: number;
-    categoryItem: string;
-    deliveryType: string;
-    targetDonasi: string;
-    userEmail: string;
+    barang: string;
+    jumlah: number;
+    kategori: string;
+    metodePengiriman: string;
+    penerima: string;
+    email: string;
   };
   
   // Reactive Variables
@@ -113,17 +113,25 @@
   
   // Fetch Donations
   const fetchDonations = async () => {
-    const querySnapshot = await getDocs(collection(dataBase, 'donations'));
-    donations.value = querySnapshot.docs.map((doc) => {
+  // Query to fetch donations, order by 'tanggal' first, then by 'jam'
+  const donationsQuery = query(
+    collection(dataBase, 'donations'),
+    orderBy('tanggal', 'desc'),  // Order by 'tanggal' descending
+    orderBy('jam', 'desc')       // Order by 'jam' descending
+  );
+  // Fetch the sorted documents from Firestore
+  const querySnapshot = await getDocs(donationsQuery);
+  donations.value = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
-        itemName: data.itemName || 'Unnamed Item',
-        quantity: data.quantity || 0,
-        categoryItem: data.categoryItem || 'No Category',
-        deliveryType: data.deliveryType || 'No Delivery Type',
-        targetDonasi: data.targetDonasi || 'No Target',
-        userEmail: data.userEmail || 'No Email',
+        barang: data.barang || 'Unnamed Item',
+        jumlah: data.jumlah || 0,
+        kategori: data.kategori || 'No Category',
+        metodePengiriman: data.metodePengiriman || 'No Delivery Type',
+        penerima: data.penerima || 'No Target',
+        email: data.email || 'No Email',
+        tanggal: data.tanggal,
       } as Donation;
     });
   };
@@ -150,8 +158,8 @@
   const filteredDonations = computed(() => {
     const searchLower = searchQuery.value.toLowerCase();
     return donations.value.filter((donation) =>
-      (donation.itemName || '').toLowerCase().includes(searchLower) ||
-      (donation.categoryItem || '').toLowerCase().includes(searchLower)
+      (donation.barang || '').toLowerCase().includes(searchLower) ||
+      (donation.kategori || '').toLowerCase().includes(searchLower)
     );
   });
   

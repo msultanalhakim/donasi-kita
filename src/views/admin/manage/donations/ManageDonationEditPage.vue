@@ -135,13 +135,13 @@ const fetchDonationData = async (id: string) => {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const donation = docSnap.data();
-      form.value.donationName = donation.itemName;
-      form.value.donationQuantity = donation.quantity;
-      form.value.donationMessage = donation.message;
-      form.value.donationCategories = donation.categoryItem;
-      form.value.donationTarget = donation.targetDonasi;
-      form.value.userEmail = donation.userEmail;
-      form.value.deliveryType = donation.deliveryType;
+      form.value.donationName = donation.barang;
+      form.value.donationQuantity = donation.jumlah;
+      form.value.donationMessage = donation.pesan;
+      form.value.donationCategories = donation.kategori;
+      form.value.donationTarget = donation.penerima;
+      form.value.userEmail = donation.email;
+      form.value.deliveryType = donation.metodePengiriman;
     }
   } catch (error) {
     console.error('Error fetching donation:', error);
@@ -183,13 +183,13 @@ const updateDonation = async () => {
   try {
     const docRef = doc(dataBase, 'donations', donationId);
     await updateDoc(docRef, {
-      itemName: form.value.donationName,
-      quantity: form.value.donationQuantity,
-      message: form.value.donationMessage || 'No message provided',
-      categoryItem: form.value.donationCategories,
-      targetDonasi: form.value.donationTarget,
-      userEmail: form.value.userEmail,
-      deliveryType: form.value.deliveryType,
+      barang: form.value.donationName,
+      jumlah: form.value.donationQuantity,
+      pesan: form.value.donationMessage || 'No message provided',
+      kategori: form.value.donationCategories,
+      penerima: form.value.donationTarget,
+      email: form.value.userEmail,
+      metodePengiriman: form.value.deliveryType,
     });
 
     const toast = await toastController.create({

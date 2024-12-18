@@ -14,9 +14,11 @@ import DonasiPage from "@/views/DonasiPage.vue";
 import DonasiForm from "@/views/DonasiForm.vue";
 import ProfilePage from "@/views/ProfilePage.vue";
 import HistoryPage from "@/views/HistoryPage.vue";
-import BeritaPage from "@/views/BeritaPage.vue";
+import ArticlePage from "@/views/ArticlePage.vue";
 import PengaturanPage from "@/views/PengaturanPage.vue";
 import DetailDonasiPage from "@/views/DetailDonasiPage.vue";
+import DetailArticlePage from "@/views/DetailArticlePage.vue";
+
 
 // Admin Views
 import DashboardPage from "@/views/admin/DashboardPage.vue";
@@ -41,6 +43,9 @@ import ManageDonationAddPage from "@/views/admin/manage/donations/ManageDonation
 import ManageDonationEditPage from "@/views/admin/manage/donations/ManageDonationEditPage.vue";
 
 import SettingPage from "@/views/admin/SettingPage.vue";
+import SettingUser from "@/views/settingUser.vue";
+import TargetPage from "@/views/TargetPage.vue";
+import DetailTargetPage from "@/views/DetailTargetPage.vue";
 
 
 // // Middleware
@@ -119,14 +124,35 @@ const routes: Array<RouteRecordRaw> = [
   },
 
   {
-    path: "/berita",
-    name: "Berita",
-    component: BeritaPage,
+    path: "/artikel",
+    name: "Artikel",
+    component: ArticlePage,
+  },
+  {
+    path: "/detail-artikel/:artikelId",
+    name: "Detail Artikel",
+    component: DetailArticlePage,
+  },
+
+  {
+    path: "/target",
+    name: "Target",
+    component: TargetPage,
+  },
+  {
+    path: "/detail-target/:targetId",
+    name: "Detail Target",
+    component: DetailTargetPage,
   },
   {
     path: "/pengaturan",
     name: "Pengaturan",
     component: PengaturanPage,
+  },
+  {
+    path: "/settingUser",
+    name: "ManageSettingUser",
+    component: SettingUser,
   },
 
   // Admin Routes

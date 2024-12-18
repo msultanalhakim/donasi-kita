@@ -37,7 +37,12 @@ import {
   IonSpinner,
   IonMenu,
   IonMenuButton,
-  IonSearchbar
+  IonSearchbar,
+  IonTextarea,
+  IonImg,
+  IonSegment,
+  IonBadge,
+  IonSegmentButton
 } from '@ionic/vue';
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -113,8 +118,13 @@ app.component('ion-select', IonSelect);
 app.component('ion-select-option', IonSelectOption);
 app.component('ion-spinner', IonSpinner);
 app.component('ion-back-button', IonBackButton);
+app.component('ion-textarea', IonTextarea);
 app.component('ion-menu', IonMenu);
 app.component('ion-menu-button', IonMenuButton);
+app.component('ion-img', IonImg);
+app.component('ion-segment', IonSegment);
+app.component('ion-segment-button', IonSegmentButton);
+app.component('ion-badge', IonBadge);
 app.component('ion-searchbar', IonSearchbar);
 app.component('swiper', Swiper);
 app.component('swiper-slide', SwiperSlide);
