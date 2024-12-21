@@ -80,14 +80,6 @@
               </ion-item>
   
               <ion-item>
-                <ion-label position="stacked">Delivery Type</ion-label>
-                <ion-select v-model="deliveryType" placeholder="Select delivery type" required>
-                  <ion-select-option value="pickup">Pickup</ion-select-option>
-                  <ion-select-option value="delivery">Delivery</ion-select-option>
-                </ion-select>
-              </ion-item>
-  
-              <ion-item>
                 <ion-label position="stacked">Message</ion-label>
                 <ion-input
                   v-model="donationMessage"
@@ -123,7 +115,6 @@
   // Form Data
   const donationName = ref('');
   const donationQuantity = ref(0);
-  const deliveryType = ref('');
   const donationMessage = ref('');
   const donationCategories = ref('');
   const donationTarget = ref('');
@@ -195,10 +186,6 @@
       showToast('Donation quantity must be greater than zero!', 'danger');
       return;
     }
-    if (!deliveryType.value) {
-      showToast('Delivery type is required!', 'danger');
-      return;
-    }
     if (!donationCategories.value) {
       showToast('Category is required!', 'danger');
       return;
@@ -213,14 +200,21 @@
     }
   
     try {
+      const now = new Date();
+    now.setHours(now.getHours() + 7); // Menambahkan 7 jam untuk zona waktu WIB
+    
       await addDoc(collection(dataBase, 'donations'), {
+        id: now.toISOString(),
         barang: donationName.value,
         jumlah: donationQuantity.value,
-        metodePengiriman: deliveryType.value,
         pesan: donationMessage.value || 'No message provided',
         kategori: donationCategories.value, // Store selected category ID
+        pemberi: userEmail.value,
         penerima: donationTarget.value, // Store selected target ID
         email: userEmail.value, // Store selected user email
+        status: false,
+        tanggal: now.toISOString().split("T")[0], // Menggunakan `now` yang sudah disesuaikan
+        jam: now.toISOString().split("T")[1].slice(0, 5), // Menggunakan `now` yang sudah disesuaikan
       });
   
       showToast('Donation added successfully!', 'success');

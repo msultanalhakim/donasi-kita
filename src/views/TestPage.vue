@@ -45,6 +45,9 @@ import { ref, onMounted } from "vue";
 
 const router = useRouter();
 
+// Define the loading state
+const loading = ref(true);
+
 // Dummy data for a single news article
 const newsDetail = ref({
   title: "Pentingnya Donasi dalam Membantu Sesama",
@@ -54,6 +57,13 @@ const newsDetail = ref({
     "Donasi adalah cara sederhana untuk membuat perubahan besar di masyarakat kita.",
     "Melalui donasi, kita dapat membantu mereka yang membutuhkan dan memberikan harapan baru.",
   ],
+});
+
+// Simulate loading delay, e.g., fetching data from an API
+onMounted(() => {
+  setTimeout(() => {
+    loading.value = false;  // Hide loading after data is loaded
+  }, 2000);  // Simulate a 2-second loading time
 });
 </script>
 

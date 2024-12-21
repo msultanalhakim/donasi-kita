@@ -125,6 +125,7 @@ export const useAuthStore = defineStore("auth", {
               // Menambahkan properti 'role' dari Firestore ke currentUser
               this.currentUser.role = userData.role;
               this.currentUser.name = userData.name ;
+              this.currentUser.alamat = userData.alamat ;
             } else {
               console.log("No user document found in Firestore");
             }

@@ -11,13 +11,13 @@
             <ion-icon slot="icon-only" :icon="arrowBack"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title class="title"> Riwayat Donasi </ion-title>
+        <ion-title class="title">Riwayat Donasi</ion-title>
       </ion-toolbar>
 
       <ion-toolbar>
         <ion-segment v-model="selectedTab" :value="selectedTab" @ionChange="onTabChange">
           <ion-segment-button value="inProgress">
-            <ion-label>Dalam Proses</ion-label>
+            <ion-label>Pending</ion-label>
           </ion-segment-button>
           <ion-segment-button value="completed">
             <ion-label>Selesai</ion-label>
@@ -39,11 +39,11 @@
           >
             <ion-card-header>
               <ion-card-title>{{ donasi.penerima }}</ion-card-title>
-              <ion-card-subtitle>{{ donasi.tanggalTeks }}</ion-card-subtitle>
+              <ion-card-subtitle>{{ donasi.tanggalTeks }}, {{ donasi.waktuTeks }}</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
               <p>{{ donasi.barang }}</p>
-              <ion-badge color="warning">Dalam Proses</ion-badge>
+              <ion-badge color="warning">Pending</ion-badge>
             </ion-card-content>
           </ion-card>
         </div>
@@ -58,7 +58,7 @@
           >
             <ion-card-header>
               <ion-card-title>{{ donasi.penerima }}</ion-card-title>
-              <ion-card-subtitle>{{ donasi.tanggalTeks }}</ion-card-subtitle>
+              <ion-card-subtitle>{{ donasi.tanggalTeks }}, {{ donasi.waktuTeks }}</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
               <p>{{ donasi.barang }}</p>
@@ -79,125 +79,115 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { computed, onMounted, ref } from "vue";
 import { arrowBack } from "ionicons/icons";
 
+interface Donation {
+  id: string;
+  penerima: string;
+  tanggalTeks: string;
+  barang: string;
+  status: boolean;
+  timestamp: number; // Add this line
+  [key: string]: any; // Additional properties for Firestore data
+}
+
+
 const selectedTab = ref("inProgress"); // Tab aktif, default "inProgress"
 const loading = ref(true); // Status loading
 const authStore = useAuthStore();
-const user = ref(""); // Menyimpan data user
+const user = ref<{ email: string } | null>(null); // Menyimpan data user
+const donations = ref<Donation[]>([]); // Array untuk menampung data dari Firestore
 
 // Mengelola tab aktif
 const onTabChange = (event: any) => {
   selectedTab.value = event.detail.value;
 };
 
-// const donations = ref([
-//   { id: 1, penerima: "Penerima A", tanggal: "2024-12-15", barang: "Buku", status: false },
-//   {
-//     id: 2,
-//     penerima: "Penerima B",
-//     tanggal: "2024-12-12",
-//     barang: "Pakaian",
-//     status: false,
-//   },
-//   {
-//     id: 3,
-//     penerima: "Penerima C",
-//     tanggal: "2024-11-10",
-//     barang: "Makanan",
-//     status: true,
-//   },
-//   {
-//     id: 4,
-//     penerima: "Penerima D",
-//     tanggal: "2024-10-01",
-//     barang: "Peralatan Belajar",
-//     status: true,
-//   },
-// ]);
-const donations = ref([]); // Array untuk menampung data dari Firestore
-
 // Filter donasi berdasarkan tab aktif
 const filteredDonations = computed(() => {
-  if (selectedTab.value === "inProgress") {
-    return donations.value.filter((donasi) => donasi.status == false);
-  } else if (selectedTab.value === "completed") {
-    return donations.value.filter((donasi) => donasi.status == true);
-  }
-  return [];
+  return donations.value.filter((donasi) => {
+    if (selectedTab.value === "inProgress") return !donasi.status;
+    if (selectedTab.value === "completed") return donasi.status;
+    return false;
+  });
 });
 
-// Ambil data dari Firestore
 const fetchDonations = async () => {
   try {
+    console.log("Fetching donations for email:", user.value?.email);
+
+    // Query Firestore
     const donationsQuery = query(
       collection(dataBase, "donations"),
-      where("email", "==", user.value.email)
+      where("email", "==", user.value?.email || "")
     );
 
-    if (donationsQuery) {
-      const querySnapshot = await getDocs(donationsQuery);
+    const querySnapshot = await getDocs(donationsQuery);
 
-      donations.value = querySnapshot.docs
-        .map((doc) => {
-          const formattedData = convertIdToFormattedData(doc.data().id); // Panggil fungsi
+    donations.value = querySnapshot.docs
+  .map((doc) => {
+    const data = doc.data();
 
-          return {
-            ...doc.data(),
-            tanggalTeks: formattedData.tanggalTeks, // Gunakan tanggalTeks yang telah diformat
-            timestamp: new Date(doc.data().id).getTime(),
-          };
-        })
-        .sort((a, b) => b.timestamp - a.timestamp); // Mengurutkan berdasarkan timestamp terbaru terlebih dahulu
-    } else {
-      alert("Anda Belum Pernah Melakukan Donasi");
+    if (!data.timestamp) {
+      console.error("Missing timestamp for donation ID:", doc.id);
+      return null; // Biarkan null sementara
     }
+
+    const timestamp = data.timestamp.toDate();
+    const formattedData = convertIdToFormattedData(timestamp);
+
+    return {
+      id: doc.id,
+      penerima: data.penerima || "",
+      tanggalTeks: formattedData.tanggalTeks,
+      barang: data.barang || "",
+      status: data.status ?? false,
+      timestamp: timestamp.getTime(),
+      ...data,
+    };
+  })
+  .filter((item): item is NonNullable<typeof item> => item !== null) // Filter dengan tipe yang eksplisit
+  .sort((a, b) => b.timestamp - a.timestamp);
+
+
+    console.log("Sorted donations:", donations.value);
   } catch (error) {
-    console.error("Error fetching donation targets:", error);
+    console.error("Error fetching donations:", error);
   }
 };
 
-// ubah tanggal jadi huruf
-// const formatFirestoreDate = (dateString) => {
-//   const date = new Date(dateString);
-//   const options = { day: "numeric", month: "long", year: "numeric" };
-//   return new Intl.DateTimeFormat("id-ID", options).format(date);
-// };
+const convertIdToFormattedData = (id: string) => {
+  const date = new Date(id); // Membuat objek Date dari id
 
-const convertIdToFormattedData = (id) => {
-  const date = new Date(id); // Mengonversi string ID ke objek Date
+  if (isNaN(date.getTime())) {
+    console.error('Invalid date:', id);
+    return { tanggalTeks: "Tanggal tidak valid", waktuTeks: "Waktu tidak valid" }; // Mengembalikan nilai default jika ID tidak valid
+  }
 
-  // Format tanggal angka: 18-12-2024
-  const tanggalAngka = date
-    .toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
-    .replace(/\//g, "-"); // Ganti separator "/" dengan "-"
-
-  // Format jam: 11.35
-  const jam = date.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  // Format tanggal teks: 18 Desember 2024
+  // Format tanggal
   const tanggalTeks = date.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
 
-  return { tanggalAngka, jam, tanggalTeks };
+  // Format waktu (waktu dalam zona waktu lokal)
+  const waktuTeks = date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  return {
+    tanggalTeks,
+    waktuTeks, // Waktu yang diformat sesuai zona waktu lokal
+  };
 };
 
-// Menangani proses saat komponen dimuat
+// Proses saat komponen dimuat
 onMounted(async () => {
   await authStore.loadUserFromLocalStorage();
   user.value = authStore.currentUser;
   await fetchDonations();
-
   loading.value = false;
-  console.log(filteredDonations.value);
 });
 </script>
 

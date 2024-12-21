@@ -22,18 +22,18 @@
           <!-- Icon Gerak -->
           <div class="waiting-icon-container">
             <ion-icon
-              v-if="donationDetails.status == false"
+              v-if="!donationDetails.status"
               :icon="hourglass"
               class="waiting-icon"
             ></ion-icon>
             <ion-icon
-              v-if="donationDetails.status == true"
+              v-else
               :icon="checkmarkCircle"
               class="success-icon"
             ></ion-icon>
           </div>
 
-          <h1 v-if="donationDetails.status == false" class="title">
+          <h1 v-if="!donationDetails.status" class="title">
             Donasi Masih Dalam Proses Penyortiran
           </h1>
           <h1 v-else class="title">Donasi Sudah Diterima</h1>
@@ -57,13 +57,6 @@
             <ion-text>{{ donationDetails.jumlah }}</ion-text>
           </ion-item>
 
-          <!-- Metode Pengriman
-
-          <ion-item class="form-input">
-            <ion-label position="stacked">Metode Pengiriman</ion-label>
-            <ion-text>{{ donationDetails.metodePengiriman }}</ion-text>
-          </ion-item> -->
-
           <!-- Pesan Opsional -->
           <ion-item class="form-input">
             <ion-label position="stacked">Pesan (Opsional)</ion-label>
@@ -73,17 +66,13 @@
           <!-- Tanggal dan Waktu -->
           <ion-item class="form-input">
             <ion-label position="stacked">Tanggal & Waktu</ion-label>
-            <ion-text>{{ donationDetails.tanggal }}</ion-text>
+            <ion-text>{{ formattedDateTime }}</ion-text>
           </ion-item>
 
           <ion-item class="form-input">
             <ion-label position="stacked">Jam</ion-label>
-            <ion-text>{{ donationDetails.jam }}</ion-text>
+            <ion-text>{{ formattedTime }}</ion-text>
           </ion-item>
-          <!-- Tombol Kembali
-          <ion-button expand="block" class="submit-button" @click="goBack">
-            Kembali
-          </ion-button> -->
         </div>
       </div>
     </ion-content>
@@ -92,10 +81,20 @@
 
 <script setup lang="ts">
 import { dataBase } from "@/firebase";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { DocumentData, Timestamp, collection, getDocs, query, where } from "firebase/firestore";
 import { arrowBack, hourglass, checkmarkCircle } from "ionicons/icons";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+// Interface untuk data donasi
+interface DonationDetails {
+  status: boolean;
+  penerima: string;
+  barang: string;
+  jumlah: number;
+  pesan: string;
+  timestamp: string | Timestamp; // timestamp bisa berupa string atau Timestamp dari Firestore
+}
 
 // Mengambil parameter donasiId dari URL
 const router = useRouter();
@@ -103,21 +102,44 @@ const route = useRoute();
 const donasiId = route.params.donasiId;
 
 const loading = ref(true);
-// Data dummy untuk detail donasi
-const donationDetails = ref({});
+// Initialize donation details with the correct type
+const donationDetails = ref<DonationDetails>({
+  status: false,
+  penerima: "",
+  barang: "",
+  jumlah: 0,
+  pesan: "",
+  timestamp: "", // Timestamp yang diterima dari Firestore
+});
 
+
+// Fungsi untuk mengambil data donasi
 const fetchDonation = async () => {
   try {
-    // Query untuk mencari dokumen dengan field tertentu (misalnya 'id' bukan ID Firestore)
     const donationsRef = collection(dataBase, "donations");
-    const q = query(donationsRef, where("id", "==", donasiId)); // Misalnya 'id' adalah field dalam dokumen
-
+    const q = query(donationsRef, where("id", "==", donasiId)); // Query berdasarkan field 'id'
     const querySnapshot = await getDocs(q);
+    
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
-        const formattedData = convertIdToFormattedData(doc.data().id);
-        donationDetails.value = doc.data();
-        donationDetails.value.tanggal = formattedData.tanggalAngka;
+        // Ambil data dokumen Firestore
+        const docData = doc.data() as DocumentData;
+
+        // Cek apakah timestamp adalah objek Timestamp atau string
+        let timestamp = docData.timestamp;
+        if (timestamp instanceof Timestamp) {
+          timestamp = timestamp.toDate().toISOString(); // Ubah menjadi string ISO
+        }
+
+        // Mengonversi data Firestore menjadi DonationDetails
+        donationDetails.value = {
+          status: docData.status,
+          penerima: docData.penerima,
+          barang: docData.barang,
+          jumlah: docData.jumlah,
+          pesan: docData.pesan,
+          timestamp: timestamp, // Menyimpan timestamp yang sudah diformat
+        };
 
         console.log("Donasi ditemukan:", donationDetails.value);
       });
@@ -129,40 +151,76 @@ const fetchDonation = async () => {
   }
 };
 
-const convertIdToFormattedData = (id) => {
-  const date = new Date(id); // Mengonversi string ID ke objek Date
-
-  // Format tanggal angka: 18-12-2024
-  const tanggalAngka = date
-    .toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
-    .replace(/\//g, "-"); // Ganti separator "/" dengan "-"
-
-  // Format jam: 11:54
-  // const jam = date.toLocaleTimeString("id-ID", {
-  //   hour: "2-digit",
-  //   minute: "2-digit",
-  //   hourCycle: "h23",
-  // });
-
-  // Format tanggal teks: 18 Desember 2024
-  const tanggalTeks = date.toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-
-  return { tanggalAngka, tanggalTeks };
+// Runtime type guard
+const isDonationDetails = (data: any): data is DonationDetails => {
+  return (
+    typeof data.status === "boolean" &&
+    typeof data.penerima === "string" &&
+    typeof data.barang === "string" &&
+    typeof data.jumlah === "number" &&
+    typeof data.pesan === "string"
+  );
 };
+
+
 onMounted(async () => {
   await fetchDonation();
-
   // dah selese loading
   loading.value = false;
 });
+
+// Computed property to format date and time
+const formattedDateTime = computed(() => {
+  if (donationDetails.value.timestamp) {
+    let date: Date;
+
+    // Cek apakah timestamp adalah instance dari Timestamp
+    if (donationDetails.value.timestamp instanceof Timestamp) {
+      date = donationDetails.value.timestamp.toDate(); // Ubah Timestamp menjadi Date
+    } else if (typeof donationDetails.value.timestamp === "string") {
+      date = new Date(donationDetails.value.timestamp); // Ubah string ISO menjadi Date
+    } else {
+      return 'Tanggal tidak valid'; // Jika bukan Timestamp atau string, kembalikan pesan kesalahan
+    }
+
+    if (isNaN(date.getTime())) {
+      return 'Tanggal tidak valid'; // Jika hasil konversi bukan Date yang valid
+    }
+
+    return date.toLocaleString('id-ID', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  return 'Tanggal tidak tersedia'; // Jika timestamp tidak ada
+});
+
+// Computed property to format time
+const formattedTime = computed(() => {
+  if (donationDetails.value.timestamp) {
+    let date: Date;
+
+    // Cek apakah timestamp adalah instance dari Timestamp
+    if (donationDetails.value.timestamp instanceof Timestamp) {
+      date = donationDetails.value.timestamp.toDate(); // Ubah Timestamp menjadi Date
+    } else if (typeof donationDetails.value.timestamp === "string") {
+      date = new Date(donationDetails.value.timestamp); // Ubah string ISO menjadi Date
+    } else {
+      return 'Jam tidak valid'; // Jika bukan Timestamp atau string, kembalikan pesan kesalahan
+    }
+
+    if (isNaN(date.getTime())) {
+      return 'Jam tidak valid'; // Jika hasil konversi bukan Date yang valid
+    }
+
+    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  }
+  return 'Jam tidak tersedia'; // Jika timestamp tidak ada
+});
+
+
 </script>
 
 <style scoped>
@@ -176,7 +234,6 @@ onMounted(async () => {
 .form-container {
   margin-top: 0px;
   width: 100%;
-
   max-width: 400px;
   padding: 20px;
   background: #ffffff;

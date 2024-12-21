@@ -18,19 +18,16 @@
       </div>
 
       <!-- News Detail Content -->
-      <div class="news-detail-container">
+      <div v-if="targetDetails" class="news-detail-container">
         <ion-img
           :src="targetDetails.imageLink"
-          alt="newsDetail.title"
+          alt="targetDetails.name"
           class="news-image"
         ></ion-img>
         <div class="news-content">
           <h1 class="news-title">{{ targetDetails.name }}</h1>
-
           <div class="news-body">
-            <p>
-              {{ targetDetails.description }}
-            </p>
+            <p>{{ targetDetails.description }}</p>
           </div>
         </div>
       </div>
@@ -42,54 +39,46 @@
 import { useRoute, useRouter } from "vue-router";
 import { arrowBack } from "ionicons/icons";
 import { ref, onMounted } from "vue";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { dataBase } from "@/firebase";
 
-// Mengambil parameter donasiId dari URL
+// Definisi tipe data untuk targetDetails
+interface TargetDetails {
+  imageLink: string;
+  name: string;
+  description: string;
+}
+
+// Router dan Route
 const router = useRouter();
 const route = useRoute();
-const targetId = route.params.targetId;
+const targetId = route.params.targetId as string; // pastikan ini string
 
+// Reactive state
 const loading = ref(true);
-const targetDetails = ref({});
+const targetDetails = ref<TargetDetails | null>(null);
 
-// Dummy data for a single news article
-const newsDetail = ref({
-  title: "Pentingnya Donasi dalam Membantu Sesama",
-  date: "15 Desember 2024",
-  image: "https://via.placeholder.com/600x400",
-  body: [
-    "Donasi adalah cara sederhana untuk membuat perubahan besar di masyarakat kita.",
-    "Melalui donasi, kita dapat membantu mereka yang membutuhkan dan memberikan harapan baru.",
-  ],
-});
-
+// Fungsi untuk mengambil artikel
 const fetchArtikel = async () => {
   try {
-    // Query untuk mencari dokumen dengan field tertentu (misalnya 'id' bukan ID Firestore)
-    const artikelRef = collection(dataBase, "donation-targets");
-    const q = query(artikelRef, where("name", "==", targetId)); // Misalnya 'id' adalah field dalam dokumen
+    const artikelRef = doc(dataBase, "donation-targets", targetId); // Use doc() to reference a specific document
 
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      querySnapshot.forEach((doc) => {
-        targetDetails.value = doc.data();
-        console.log("Donasi ditemukan:", targetDetails.value);
-      });
+    const docSnapshot = await getDoc(artikelRef);
+    if (docSnapshot.exists()) {
+      targetDetails.value = docSnapshot.data() as TargetDetails;
+      console.log("Donasi ditemukan:", targetDetails.value);
     } else {
       console.log("Donasi tidak ditemukan dengan ID yang diberikan.");
     }
   } catch (error) {
     console.error("Error fetching donation:", error);
+  } finally {
+    loading.value = false;
   }
 };
 
-onMounted(async () => {
-  await fetchArtikel();
-  console.log("target ID", targetId);
-  console.log(targetDetails.value);
-  loading.value = false;
-});
+// Lifecycle hook
+onMounted(fetchArtikel);
 </script>
 
 <style scoped>
@@ -115,14 +104,7 @@ onMounted(async () => {
   margin-bottom: 10px;
 }
 
-.news-date {
-  font-size: 14px;
-  color: #6c757d;
-  margin-bottom: 20px;
-}
-
 .news-body p {
-  text-align: center;
   text-align: justify;
   font-size: 16px;
   color: #5b5b5b;
@@ -156,22 +138,6 @@ onMounted(async () => {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-.success-icon {
-  font-size: 50px;
-  color: #28a745; /* Hijau sukses */
-  animation: pulse-success 1.5s infinite;
-}
-
-@keyframes pulse-success {
-  0%,
-  100% {
-    transform: scale(1.1);
-  }
-  50% {
-    transform: scale(1.7);
   }
 }
 </style>

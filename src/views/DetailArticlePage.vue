@@ -20,16 +20,16 @@
       <!-- News Detail Content -->
       <div class="news-detail-container">
         <ion-img
-          :src="artikelDetails.imageLink"
-          alt="newsDetail.title"
+          :src="artikelDetails?.imageLink"
+          alt="artikelDetails?.title"
           class="news-image"
         ></ion-img>
         <div class="news-content">
-          <h1 class="news-title">{{ artikelDetails.title }}</h1>
-          <p class="news-date">{{ artikelDetails.tanggal }}</p>
+          <h1 class="news-title">{{ artikelDetails?.title }}</h1>
+          <p class="news-date">{{ artikelDetails?.tanggal }}</p>
           <div class="news-body">
             <p>
-              {{ artikelDetails.description }}
+              {{ artikelDetails?.description }}
             </p>
           </div>
         </div>
@@ -45,42 +45,47 @@ import { ref, onMounted } from "vue";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { dataBase } from "@/firebase";
 
-// Mengambil parameter donasiId dari URL
+// Define an interface for the article details
+interface ArtikelDetails {
+  imageLink: string;
+  title: string;
+  tanggal: string;
+  description: string;
+}
+
+// Mengambil parameter artikelId dari URL
 const router = useRouter();
 const route = useRoute();
 const artikelId = route.params.artikelId;
 
 const loading = ref(true);
-const artikelDetails = ref({});
 
-// Dummy data for a single news article
-const newsDetail = ref({
-  title: "Pentingnya Donasi dalam Membantu Sesama",
-  date: "15 Desember 2024",
-  image: "https://via.placeholder.com/600x400",
-  body: [
-    "Donasi adalah cara sederhana untuk membuat perubahan besar di masyarakat kita.",
-    "Melalui donasi, kita dapat membantu mereka yang membutuhkan dan memberikan harapan baru.",
-  ],
+// Initialize artikelDetails as an empty object
+const artikelDetails = ref<ArtikelDetails>({
+  imageLink: "",
+  title: "",
+  tanggal: "",
+  description: "",
 });
 
+// Fetch article details from Firestore
 const fetchArtikel = async () => {
   try {
-    // Query untuk mencari dokumen dengan field tertentu (misalnya 'id' bukan ID Firestore)
+    // Query for the article document by 'id'
     const artikelRef = collection(dataBase, "articles");
-    const q = query(artikelRef, where("id", "==", artikelId)); // Misalnya 'id' adalah field dalam dokumen
+    const q = query(artikelRef, where("id", "==", artikelId));
 
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
       querySnapshot.forEach((doc) => {
-        artikelDetails.value = doc.data();
-        console.log("Donasi ditemukan:", artikelDetails.value);
+        artikelDetails.value = doc.data() as ArtikelDetails;
+        console.log("Article found:", artikelDetails.value);
       });
     } else {
-      console.log("Donasi tidak ditemukan dengan ID yang diberikan.");
+      console.log("Article not found with the provided ID.");
     }
   } catch (error) {
-    console.error("Error fetching donation:", error);
+    console.error("Error fetching article:", error);
   }
 };
 
@@ -153,22 +158,6 @@ onMounted(async () => {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-.success-icon {
-  font-size: 50px;
-  color: #28a745; /* Hijau sukses */
-  animation: pulse-success 1.5s infinite;
-}
-
-@keyframes pulse-success {
-  0%,
-  100% {
-    transform: scale(1.1);
-  }
-  50% {
-    transform: scale(1.7);
   }
 }
 </style>

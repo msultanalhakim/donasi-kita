@@ -17,7 +17,7 @@
           />
         </div>
         <!-- Name and Membership -->
-        <h2 class="username">{{ user.name }}</h2>
+        <h2 class="username">{{ user?.name }}</h2>
         <p class="membership">Premium Member <ion-icon :icon="starOutline"></ion-icon></p>
       </div>
 
@@ -25,7 +25,7 @@
       <div class="menu-section">
         <ion-list>
           <ion-item
-            v-if="user.role == 'Administrator'"
+            v-if="user?.role == 'Administrator'"
             button
             @click="() => router.push('/dashboard')"
           >
@@ -63,16 +63,21 @@ import {
   optionsOutline,
   settingsOutline,
   timeOutline,
-  addCircleOutline,
   starOutline,
 } from "ionicons/icons";
 import { useAuthStore } from "@/authStore";
 import { onMounted, ref } from "vue";
 
+// Define the User interface
+interface User {
+  name: string;
+  role: string;
+}
+
 const router = useRouter();
 const loading = ref(true);
 const authStore = useAuthStore(); // Mengakses authStore
-const user = ref("");
+const user = ref<User | null>(null); // Specify that user is of type User or null
 
 const handleLogout = async () => {
   await authStore.logout(); // Memanggil fungsi logout dari authStore.ts
@@ -82,7 +87,7 @@ const handleLogout = async () => {
 onMounted(async () => {
   await authStore.loadUserFromLocalStorage();
   user.value = authStore.currentUser;
-  console.log(user.value.role);
+  console.log(user.value?.role); // Safe access using optional chaining
   if (user.value) {
     loading.value = false;
   }

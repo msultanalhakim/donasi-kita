@@ -1,7 +1,7 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" scroll-assist="false" scroll-padding="false">
-      <!-- header -->
+      <!-- Header -->
       <ion-header>
         <ion-toolbar>
           <ion-buttons slot="start">
@@ -12,12 +12,12 @@
         </ion-toolbar>
       </ion-header>
 
-      <!-- loading -->
+      <!-- Loading -->
       <div v-if="loading" class="loading-overlay">
         <div class="spinner"></div>
       </div>
 
-      <!-- main -->
+      <!-- Main -->
       <div class="ion-padding donation-page">
         <div class="form-container">
           <div class="icon-box">
@@ -64,14 +64,12 @@
             </ion-select>
           </ion-item>
 
-          <!-- Barang yang didonasikan -->
+          <!-- Barang Donasi -->
           <ion-item class="form-input">
             <ion-label position="stacked">Barang Donasi</ion-label>
             <ion-textarea
               v-model="donationDetails.barang"
               placeholder="Barang yang didonasikan"
-              @ionInput="(e) => (donationDetails.barang = e.target.value)"
-              required
             ></ion-textarea>
           </ion-item>
 
@@ -80,15 +78,44 @@
             <ion-label position="stacked">Jumlah Barang</ion-label>
             <ion-input
               type="text"
-              @input="validateInput"
               v-model="donationDetails.jumlah"
-              placeholder="Barang yang didonasikan"
-              required
+              @input="validateInput"
+              placeholder="Jumlah Barang"
             ></ion-input>
             <ion-text v-if="errorMessage" color="danger" class="warning-text">
               {{ errorMessage }}
             </ion-text>
           </ion-item>
+
+          <!-- Tipe Pengiriman -->
+          <ion-item class="form-input">
+            <ion-label position="stacked">Metode Pengiriman</ion-label>
+            <ion-select
+              interface="alert"
+              v-model="donationDetails.metodePengiriman"
+              @ionChange="handleMetodePengirimanChange"
+              placeholder="Pilih Metode Pengiriman"
+            >
+              <ion-select-option value="Pickup">Pickup</ion-select-option>
+              <ion-select-option value="Delivery">Delivery</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Alamat -->
+          <div v-if="donationDetails.metodePengiriman === 'Pickup'">
+            <ion-item class="form-input">
+              <ion-label position="stacked">Alamat Pickup</ion-label>
+              <ion-input
+                v-model="donationDetails.alamat"
+                placeholder="Masukkan Alamat Pickup"
+              ></ion-input>
+            </ion-item>
+          </div>
+
+
+          <div v-if="donationDetails.metodePengiriman === 'Delivery'" style="padding: 0 16px;line-height: 25px;">
+            <p><b>Alamat Pengiriman:</b><br>Jl. Mawar, Dusun 1, Kalimanah Wetan, Kec. Kalimanah, Kabupaten Purbalingga, Jawa Tengah 53371</p>
+          </div>
 
           <!-- Pesan Opsional -->
           <ion-item class="form-input">
@@ -96,11 +123,10 @@
             <ion-textarea
               v-model="donationDetails.pesan"
               placeholder="Tulis pesan atau harapan Anda"
-              @ionInput="(e) => (donationDetails.pesan = e.target.value)"
-            />
+            ></ion-textarea>
           </ion-item>
 
-          <!-- Tombol Kirim -->
+          <!-- Submit Button -->
           <ion-button expand="block" class="submit-button" @click="submitDonation">
             Kirim Donasi
           </ion-button>
@@ -111,144 +137,251 @@
 </template>
 
 <script setup lang="ts">
-import formIcon from "@/components/icons/formIcon.vue";
-import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { arrowBack } from "ionicons/icons";
-import { addDoc, collection, doc, getDocs, serverTimestamp } from "firebase/firestore";
+
+import formIcon from "@/components/icons/formIcon.vue";
+
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  doc,
+  serverTimestamp,
+  Timestamp,
+  query,
+  where,
+} from "firebase/firestore";
 import { dataBase } from "@/firebase";
-import { getAuth } from "firebase/auth";
 import { useAuthStore } from "@/authStore";
 
+// Define types
+interface DonationTarget {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface DonationDetails {
+  kategori: string;
+  penerima: string;
+  barang: string;
+  jumlah: string;
+  pesan: string;
+  metodePengiriman: string;
+  alamat: string;
+  status: boolean;
+}
+
+// Refs and stores
+const router = useRouter();
 const authStore = useAuthStore();
 
-const loading = ref(true);
-const user = ref();
-// Ambil data dari router state
-const router = useRouter();
-// Data penerima donasi
-const donationTargets = ref([]); // Array untuk menampung data dari Firestore
-const categories = ref([]);
-
-const fetchCategories = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(dataBase, "categories"));
-    categories.value = querySnapshot.docs.map((doc) => ({
-      id: doc.id, // ID unik dari dokumen Firestore
-      name: doc.data().name, // Nama penerima
-    }));
-  } catch (error) {
-    console.error("Error fetching donation targets:", error);
-  }
-};
-
-const fetchDonationTargets = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(dataBase, "donation-targets"));
-    donationTargets.value = querySnapshot.docs.map((doc) => ({
-      id: doc.id, // ID unik dari dokumen Firestore
-      name: doc.data().name, // Nama penerima
-    }));
-  } catch (error) {
-    console.error("Error fetching donation targets:", error);
-  }
-};
-
-// Data donasi
-const donationDetails = ref({
+const loading = ref(false);
+const user = ref(authStore.currentUser);
+const donationTargets = ref<DonationTarget[]>([]);
+const categories = ref<Category[]>([]);
+const donationDetails = ref<DonationDetails>({
   kategori: "",
   penerima: "",
-  alamat: "",
   barang: "",
   jumlah: "",
   pesan: "",
+  metodePengiriman: "",
+  alamat: "",
+  status: false,
 });
+const errorMessage = ref("");
 
-// Fungsi untuk mengirim data donasi
-// Fungsi untuk kirim donasi
+const fetchDonationTargets = async () => {
+  try {
+    const snapshot = await getDocs(collection(dataBase, "donation-targets"));
+    snapshot.forEach((doc) => {
+      console.log(doc.id, doc.data()); // Mengakses ID dan data dari dokumen
+      donationTargets.value.push({ id: doc.id, name: doc.data().name });
+    });
+  } catch (error) {
+    console.error("Error fetching donation targets:", error);
+  }
+};
+
+const fetchCategories = async () => {
+  try {
+    const snapshot = await getDocs(collection(dataBase, "categories"));
+    categories.value = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      name: doc.data().name,
+    }));
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+};
+
+const fetchUserAddress = async (): Promise<string | null> => {
+  if (!user.value || !user.value.email) {
+    console.error("User is not logged in or email is not available.");
+    return null; // Return null if user is not logged in or email is not available
+  }
+
+  try {
+    // Query the Firestore collection to find the user by email
+    const userQuery = query(collection(dataBase, "users"), where("email", "==", user.value.email));
+    const userQuerySnapshot = await getDocs(userQuery);
+
+    if (!userQuerySnapshot.empty) {
+      const userDoc = userQuerySnapshot.docs[0]; // Get the first document
+      const userData = userDoc.data();
+      const userId = userDoc.id; // Get the document ID
+
+      // Ensure the address is available in the user's data
+      if (userData && userData.alamat) {
+        donationDetails.value.alamat = userData.alamat;
+      } else {
+        donationDetails.value.alamat = ""; // Set default if no address
+      }
+
+      return userId; // Return the userId to be used later
+    } else {
+      console.error("User address not available.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching user address:", error);
+    return null; // Return null in case of an error
+  }
+};
+
+
+
+
+// Handle metode pengiriman change
+const handleMetodePengirimanChange = () => {
+  if (donationDetails.value.metodePengiriman === "Pickup") {
+    fetchUserAddress();
+  }
+};
+
+// Validate input
+const validateInput = () => {
+  const input = donationDetails.value.jumlah;
+  if (!/^\d*$/.test(input)) {
+    errorMessage.value = "Jumlah harus berupa angka!";
+    donationDetails.value.jumlah = input.replace(/\D/g, "");
+  } else {
+    errorMessage.value = "";
+  }
+};
+
+// Submit donation
 const submitDonation = async () => {
   if (
+    !donationDetails.value.kategori ||
     !donationDetails.value.penerima ||
     !donationDetails.value.barang ||
     !donationDetails.value.jumlah ||
-    !donationDetails.value.kategori
+    !donationDetails.value.metodePengiriman
   ) {
     alert("Harap isi semua form.");
     return;
   }
 
-  try {
-    // masalah waktu
-    const now = new Date();
-    now.setHours(now.getHours() + 7); // Menambahkan 7 jam untuk zona waktu WIB
+  if (donationDetails.value.metodePengiriman === "Pickup" && !donationDetails.value.alamat.trim()) {
+    alert("Alamat Pickup harus diisi.");
+    return;
+  }
 
-    if (user.value) {
-      loading.value = true;
+  try {
+    loading.value = true;
+    const alamat_lama = donationDetails.value.alamat;
+    const userId = await fetchUserAddress();
+    if (!userId) return;
+
+    if (donationDetails.value.metodePengiriman == "Pickup"){
       const docRef = await addDoc(collection(dataBase, "donations"), {
-        id: now.toISOString(),
+        id: new Date().toISOString(),
         status: false,
-        kategori: donationDetails.value.kategori,
-        pemberi: user.value.name,
         email: user.value.email,
+        kategori: donationDetails.value.kategori,
+        metodePengiriman: donationDetails.value.metodePengiriman,
+        penerima: donationDetails.value.penerima,
+        barang: donationDetails.value.barang,
+        alamat: alamat_lama,
+        jumlah: donationDetails.value.jumlah,
+        pesan: donationDetails.value.pesan,
+        timestamp: new Date(),
+        userId: userId,
+      });
+    } else {
+      const docRef = await addDoc(collection(dataBase, "donations"), {
+        id: new Date().toISOString(),
+        status: false,
+        email: user.value.email,
+        kategori: donationDetails.value.kategori,
+        metodePengiriman: donationDetails.value.metodePengiriman,
         penerima: donationDetails.value.penerima,
         barang: donationDetails.value.barang,
         jumlah: donationDetails.value.jumlah,
-        pesan: donationDetails.value.pesan || "", // Pesan opsional
-        tanggal: now.toISOString().split("T")[0], // Menggunakan `now` yang sudah disesuaikan
-        jam: now.toISOString().split("T")[1].slice(0, 5), // Menggunakan `now` yang sudah disesuaikan
+        pesan: donationDetails.value.pesan,
+        timestamp: new Date(),
+        userId: userId,
       });
-      loading.value = false;
 
-      alert("Donasi Anda berhasil dikirim!");
-      router.push("/riwayat-donasi");
-
-      donationDetails.value = {
-        penerima: "",
-        barang: "",
-        jumlah: "",
-        pesan: "",
-      }; // Reset form setelah kirim
     }
+
+    const userDoc = doc(dataBase, "users", userId);
+  const userSnapshot = await getDoc(userDoc);
+    if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+
+        // Add or update the address field
+        if (!userData.alamat || userData.alamat.trim() === "") {
+          await updateDoc(userDoc, {
+            alamat: alamat_lama,
+          });
+          console.log("New address added.");
+        } else {
+          await updateDoc(userDoc, {
+            alamat: alamat_lama,
+          });
+          console.log("Address updated.");
+        }
+      } else {
+        console.log("User not found.");
+      }
+
+    alert("Donasi berhasil dikirim!");
+    router.push("/home");
   } catch (error) {
-    console.error("Gagal mengirim donasi:", error);
-    alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+    console.error("Error submitting donation:", error);
+    alert("Terjadi kesalahan, silakan coba lagi.");
+  } finally {
+    loading.value = false;
   }
 };
 
-const errorMessage = ref(""); // Untuk menyimpan pesan error
-const validateInput = () => {
-  const input = donationDetails.value.jumlah;
 
-  // Cek apakah input hanya berisi angka
-  if (!/^\d*$/.test(input)) {
-    errorMessage.value = "Jumlah harus berupa angka!";
-    donationDetails.value.jumlah = input.replace(/\D/g, ""); // Hapus karakter non-angka
-  } else {
-    errorMessage.value = ""; // Bersihkan pesan error jika input valid
-  }
-};
 
+// Initialize on mount
 onMounted(async () => {
-  await authStore.loadUserFromLocalStorage();
-  user.value = authStore.currentUser;
-
   await fetchDonationTargets();
   await fetchCategories();
-
-  loading.value = false;
-
-  // Reset form input
-  donationDetails.value = {
-    kategori: "",
-    penerima: "",
-    barang: "",
-    jumlah: "",
-    pesan: "",
-  };
+  await authStore.loadUserFromLocalStorage();
+  console.log(authStore.currentUser);
+  user.value = authStore.currentUser;
+await fetchUserAddress();
 });
 </script>
 
 <style scoped>
+/* Add your styles here */
 .donation-page {
   display: flex;
   justify-content: center;
@@ -315,27 +448,11 @@ onMounted(async () => {
   color: #ffffff;
 }
 
-/* Menghapus efek fokus */
-ion-textarea {
-  --background: transparent; /* Latar belakang transparan */
-  --box-shadow: none; /* Menghapus bayangan */
-  --border-color: transparent; /* Hilangkan border */
-  --border-radius: 0; /* Samakan dengan ion-input */
-  --padding-start: 0; /* Sesuaikan padding */
-  --padding-end: 0;
+.warning-text {
+  font-size: 14px;
+  margin-top: 5px;
 }
 
-/* Fokus dan aktif */
-ion-textarea:focus {
-  --background: #ffffff; /* Tetap sama saat fokus */
-  --box-shadow: none;
-  --border-color: #cccccc;
-}
-ion-content {
-  --padding-bottom: 0; /* Hilangkan padding bawah */
-}
-
-/* Loading overlay */
 .loading-overlay {
   position: absolute;
   top: 0;
@@ -350,7 +467,6 @@ ion-content {
   align-items: center;
 }
 
-/* Spinner for loading */
 .spinner {
   width: 40px;
   height: 40px;
@@ -364,10 +480,5 @@ ion-content {
   to {
     transform: rotate(360deg);
   }
-}
-
-.warning-text {
-  font-size: 14px;
-  margin-top: 5px;
 }
 </style>

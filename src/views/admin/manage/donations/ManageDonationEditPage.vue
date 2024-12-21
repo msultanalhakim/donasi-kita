@@ -59,15 +59,6 @@
               <ion-input v-model="form.donationQuantity" placeholder="Enter donation quantity" type="number" required></ion-input>
             </ion-item>
 
-            <!-- Delivery Type Selection -->
-            <ion-item>
-              <ion-label position="stacked">Delivery Type</ion-label>
-              <ion-select v-model="form.deliveryType" placeholder="Select delivery type" required>
-                <ion-select-option value="pickup">Pickup</ion-select-option>
-                <ion-select-option value="delivery">Delivery</ion-select-option>
-              </ion-select>
-            </ion-item>
-
             <!-- Message Input -->
             <ion-item>
               <ion-label position="stacked">Message</ion-label>
@@ -104,7 +95,6 @@ const form = ref({
   donationCategories: '',
   donationTarget: '',
   userEmail: '',
-  deliveryType: '',
 });
 
 // Router and route
@@ -141,7 +131,6 @@ const fetchDonationData = async (id: string) => {
       form.value.donationCategories = donation.kategori;
       form.value.donationTarget = donation.penerima;
       form.value.userEmail = donation.email;
-      form.value.deliveryType = donation.metodePengiriman;
     }
   } catch (error) {
     console.error('Error fetching donation:', error);
@@ -189,7 +178,6 @@ const updateDonation = async () => {
       kategori: form.value.donationCategories,
       penerima: form.value.donationTarget,
       email: form.value.userEmail,
-      metodePengiriman: form.value.deliveryType,
     });
 
     const toast = await toastController.create({

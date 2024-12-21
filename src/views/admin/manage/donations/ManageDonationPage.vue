@@ -42,12 +42,33 @@
               <ion-item v-for="donation in paginatedDonations" :key="donation.id" lines="inset">
                 <ion-label>
                   <div class="donation-card">
-                    <h2>{{ donation.barang }}</h2>
+                    <div class="donation-header">
+                      <h2>{{ donation.barang }}</h2>{{  }}
+                      <!-- Ensure donation and status exist before checking conditions -->
+                      <ion-button 
+                        v-if="donation?.status === false" 
+                        color="transparent" 
+                        @click="verifyDonation(donation.id)" 
+                        class="donation-false"
+                      >
+                      <ion-icon slot="icon-only" :icon="checkbox" style="font-size: 18px;color: green;"></ion-icon>
+                        Verify
+                      </ion-button>
+                      <ion-button 
+                        v-if="donation?.status === true" 
+                        color="transparent" 
+                        class="donation-true"
+                        disabled
+                      >
+                        <ion-icon slot="icon-only" :icon="checkbox" style="font-size: 18px;"></ion-icon>
+                        Verified
+                      </ion-button>
+                    </div>
                     <div class="donation-info">
-                      <p><strong>Quantity:</strong> {{ donation.jumlah }}</p>
-                      <p><strong>Category:</strong> {{ donation.kategori }}</p>
-                      <p><strong>Delivery Type:</strong> {{ donation.metodePengiriman }}</p>
-                      <p><strong>Target:</strong> {{ donation.penerima }}</p>
+                      <p><strong>Kategori:</strong> {{ donation.kategori }}</p>
+                      <p><strong>Penerima:</strong> {{ donation.penerima }}</p>
+                      <p><strong>Jumlah:</strong> {{ donation.jumlah }}</p>
+                      <p><strong>Metode Pengiriman:</strong> {{ donation.metodePengiriman }}</p>
                       <p><strong>User Email:</strong> {{ donation.email }}</p>
                     </div>
                     <ion-buttons slot="end" class="button-group">
@@ -86,55 +107,80 @@
   <script setup lang="ts">
   import { useRouter } from 'vue-router';
   import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-  import { collection, getDocs, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+  import { collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
   import { dataBase } from '@/firebase';
-  import { trash, create, add, home } from 'ionicons/icons';
+  import { trash, create, add, home, checkboxOutline, checkbox } from 'ionicons/icons';
   import { alertController, toastController } from '@ionic/vue';
   
   // Router
   const router = useRouter();
   
-  // Define the Donation type
-  type Donation = {
-    id: string;
-    barang: string;
-    jumlah: number;
-    kategori: string;
-    metodePengiriman: string;
-    penerima: string;
-    email: string;
-  };
-  
-  // Reactive Variables
-  const donations = ref<Donation[]>([]);
-  const itemsPerPage = 5;
-  const currentPage = ref(1);
-  const searchQuery = ref('');
-  
-  // Fetch Donations
-  const fetchDonations = async () => {
-  // Query to fetch donations, order by 'tanggal' first, then by 'jam'
-  const donationsQuery = query(
-    collection(dataBase, 'donations'),
-    orderBy('tanggal', 'desc'),  // Order by 'tanggal' descending
-    orderBy('jam', 'desc')       // Order by 'jam' descending
-  );
-  // Fetch the sorted documents from Firestore
-  const querySnapshot = await getDocs(donationsQuery);
-  donations.value = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        barang: data.barang || 'Unnamed Item',
-        jumlah: data.jumlah || 0,
-        kategori: data.kategori || 'No Category',
-        metodePengiriman: data.metodePengiriman || 'No Delivery Type',
-        penerima: data.penerima || 'No Target',
-        email: data.email || 'No Email',
-        tanggal: data.tanggal,
-      } as Donation;
-    });
-  };
+  /// Define the Donation type
+type Donation = {
+  timestamp: any;
+  id: string;
+  barang: string;
+  jumlah: number;
+  kategori: string;
+  metodePengiriman: string;
+  penerima: string;
+  email: string;
+  tanggal: string | Date;
+  status: string | boolean;
+};
+
+// Reactive Variables
+const donations = ref<Donation[]>([]);
+const itemsPerPage = 5;
+const currentPage = ref(1);
+const searchQuery = ref('');
+
+const fetchDonations = async () => {
+  try {
+    // Query to fetch donations, ordered by 'timestamp'
+    const donationsQuery = query(
+      collection(dataBase, 'donations'),
+      orderBy('timestamp', 'desc') // Order by 'timestamp' descending
+    );
+
+    // Fetch the sorted documents from Firestore
+    const querySnapshot = await getDocs(donationsQuery);
+
+    // Map the fetched documents to Donation type
+    donations.value = querySnapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+
+        if (!data.timestamp) {
+          console.error(`Missing 'timestamp' for donation ID: ${doc.id}`);
+          return null; // Skip documents with missing 'timestamp'
+        }
+
+        const timestampDate = data.timestamp.toDate 
+          ? data.timestamp.toDate() 
+          : new Date(); // Convert Firestore Timestamp to Date
+
+        return {
+          id: doc.id,
+          barang: String(data.barang || 'Unnamed Item'), // Ensure type string
+          jumlah: Number(data.jumlah || 0), // Ensure type number
+          kategori: String(data.kategori || 'No Category'), // Ensure type string
+          metodePengiriman: String(data.metodePengiriman || 'No Delivery Type'), // Ensure type string
+          penerima: String(data.penerima || 'No Target'), // Ensure type string
+          email: String(data.email || 'No Email'), // Ensure type string
+          timestamp: timestampDate, // Use the timestamp as a Date
+          tanggal: timestampDate.toISOString().split("T")[0], // Derive 'tanggal' from timestamp
+          status: data.status ?? false, // Ensure type string | boolean
+        } as Donation;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null) // Filter out null values
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Explicitly sort by timestamp
+  } catch (error) {
+    console.error("Error fetching donations:", error);
+  }
+};
+
+
   
   // Call fetchDonations on component mount
   onMounted(() => {
@@ -188,6 +234,56 @@
   const editDonation = (donation: Donation) => {
     router.push({ name: 'ManageDonationEdit', params: { donationId: donation.id } });
   };
+  
+  const verifyDonation = async (donationId: string) => {
+  const alert = await alertController.create({
+    header: "Confirm Verification",
+    message: "Are you sure you want to verify this donation?",
+    buttons: [
+      {
+        text: "No",
+        role: "cancel",
+        handler: () => {
+          console.log("Verification canceled.");
+        },
+      },
+      {
+        text: "Yes",
+        handler: async () => {
+          try {
+            const docRef = doc(dataBase, "donations", donationId);
+            await updateDoc(docRef, {
+              status: true, // Update to a boolean for consistency
+            });
+
+            const toast = await toastController.create({
+              message: "Donation has been verified!",
+              duration: 2000,
+              color: "secondary",
+              position: "top",
+            });
+            toast.present();
+
+            // Refresh the page
+            location.reload();
+          } catch (error) {
+            console.error("Error verifying donation:", error);
+
+            const errorToast = await toastController.create({
+              message: "An error occurred while verifying the donation.",
+              duration: 2000,
+              color: "danger",
+              position: "top",
+            });
+            errorToast.present();
+          }
+        },
+      },
+    ],
+  });
+
+  await alert.present();
+};
   
   const deleteDonation = async (donationId: string) => {
     const alert = await alertController.create({
@@ -275,7 +371,27 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
   
-  .donation-card h2 {
+  .donation-header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .donation-header .donation-false{
+    background: #e0e0e0;
+    color: green;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+  
+  .donation-header .donation-true{
+    background: green;
+    color: #e0e0e0;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+  
+  .donation-header h2 {
     font-size: 22px;
     font-weight: bold;
     margin: 0;

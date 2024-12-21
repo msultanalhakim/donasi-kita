@@ -4,11 +4,6 @@
       <!-- header -->
       <ion-header>
         <ion-toolbar>
-          <!-- <ion-buttons slot="start">
-            <ion-button @click="router.push('/home')" fill="clear" color="dark">
-              <ion-icon slot="icon-only" :icon="arrowBack"></ion-icon>
-            </ion-button>
-          </ion-buttons> -->
           <ion-title class="title"> Berita </ion-title>
         </ion-toolbar>
       </ion-header>
@@ -49,18 +44,30 @@ import { arrowBack } from "ionicons/icons";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+// Define the Article interface
+interface Article {
+  id: string;
+  imageLink: string;
+  title: string;
+  tanggalTeks: string;
+}
+
 const loading = ref(true);
 const router = useRouter();
-const articles = ref([]); // Inisialisasi sebagai array
+const articles = ref<Article[]>([]); // Initialize as an array of Article type
 
-// ubah tanggal jadi huruf
-const formatFirestoreDate = (dateString) => {
+// Function to format Firestore date to string
+const formatFirestoreDate = (dateString: string) => {
   const date = new Date(dateString);
-  const options = { day: "numeric", month: "long", year: "numeric" };
+  const options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "long",
+    year: "numeric", // Ensure year is 'numeric' or '2-digit'
+  };
   return new Intl.DateTimeFormat("id-ID", options).format(date);
 };
 
-// Fungsi untuk mengambil artikel dari Firestore
+// Function to fetch articles from Firestore
 const fetchArticles = async () => {
   try {
     const querySnapshot = await getDocs(collection(dataBase, "articles"));
@@ -68,47 +75,15 @@ const fetchArticles = async () => {
       id: doc.data().id,
       imageLink: doc.data().imageLink,
       title: doc.data().title,
-
       tanggalTeks: formatFirestoreDate(doc.data().tanggal),
     }));
   } catch (error) {
     console.error("Error fetching articles:", error);
   }
 };
-// Dummy data for news
-const newsList = ref([
-  {
-    id: 1,
-    title: "Pentingnya Donasi dalam Membantu Sesama",
-    date: "15 Desember 2024",
-    image: "https://via.placeholder.com/300x200",
-    summary:
-      "Donasi adalah cara sederhana untuk membuat perubahan besar di masyarakat kita.",
-  },
-  {
-    id: 2,
-    title: "Kisah Inspiratif dari Para Penerima Donasi",
-    date: "14 Desember 2024",
-    image: "https://via.placeholder.com/300x200",
-    summary: "Cerita dari mereka yang telah terbantu melalui donasi Anda.",
-  },
-  {
-    id: 3,
-    title: "Bagaimana Anda Bisa Membantu di Tahun Baru",
-    date: "13 Desember 2024",
-    image: "https://via.placeholder.com/300x200",
-    summary: "Ide-ide donasi untuk membawa semangat baru di tahun mendatang.",
-  },
-]);
-
-// Fungsi untuk memformat tanggal dan waktu
-
-// Panggil fungsi saat komponen dimuat
 
 onMounted(async () => {
   await fetchArticles();
-
-  console.log(articles.value);
   loading.value = false;
 });
 </script>
@@ -162,6 +137,7 @@ ion-card-content p {
   --border-radius: 26px;
   transition: background-color 0.5s ease-in-out;
 }
+
 /* Loading overlay */
 .loading-overlay {
   position: absolute;
